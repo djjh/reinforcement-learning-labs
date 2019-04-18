@@ -4,7 +4,12 @@ pip-selfcheck.json
 pyvenv.cfg
 
 
-############# Python #############
+# OSX ################################
+
+.DS_Store
+
+
+# Python ##############################
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
