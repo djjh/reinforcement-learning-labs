@@ -9,10 +9,10 @@ pip install -e .
 ```
 
 ## Usage
-Each algorithm is implemented in a single file.
+Each practice algorithm implementation consists of a single file.
 
 To run an algorithm:
 
 ```
-python algorithms/<XX_short_algorithm_description>.py
+python practice/<XX_short_algorithm_description>.py
 ```
