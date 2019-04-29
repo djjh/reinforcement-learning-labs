@@ -9,7 +9,7 @@ import random
 ######################################
 
 show_dataset_description = False
-show_plots = True
+show_plots = False
 random_seed = 0
 
 
@@ -127,37 +127,39 @@ predictions = model.predict(test_images)
 # Display Predictions Graphically #
 ###################################
 
-def plot_image(prediction_probabilities, true_label, image):
-    pp.xticks([])
-    pp.yticks([])
-    pp.grid(False)
-    pp.imshow(image, cmap=pp.cm.binary)
-    predicted_label = np.argmax(prediction_probabilities)
-    color = 'blue' if predicted_label == true_label else 'red'
-    pp.xlabel(
-        "{} {:2.0f}% ({})".format(
-            label_names[predicted_label],
-            100 * np.max(prediction_probabilities),
-            label_names[true_label]),
-        color=color)
+if show_plots:
 
-def plot_value_array(prediction_probabilities, true_label):
-    pp.xticks([])
-    pp.yticks([])
-    pp.grid(False)
-    plot = pp.bar(range(num_labels), prediction_probabilities, color="#777777")
-    pp.ylim([0, 1])
-    predicted_label = np.argmax(prediction_probabilities)
-    plot[predicted_label].set_color('red')
-    plot[true_label].set_color('blue')
+    def plot_image(prediction_probabilities, true_label, image):
+        pp.xticks([])
+        pp.yticks([])
+        pp.grid(False)
+        pp.imshow(image, cmap=pp.cm.binary)
+        predicted_label = np.argmax(prediction_probabilities)
+        color = 'blue' if predicted_label == true_label else 'red'
+        pp.xlabel(
+            "{} {:2.0f}% ({})".format(
+                label_names[predicted_label],
+                100 * np.max(prediction_probabilities),
+                label_names[true_label]),
+            color=color)
 
-num_rows = 5
-num_cols = 3
-num_images = num_rows * num_cols
-pp.figure(figsize=(2*2*num_cols, 2*num_rows))
-for i in range(num_images):
-    pp.subplot(num_rows, 2*num_cols, 2*i+1)
-    plot_image(predictions[i], test_labels[i], test_images[i])
-    pp.subplot(num_rows, 2*num_cols, 2*i+2)
-    plot_value_array(predictions[i], test_labels[i])
-pp.show()
+    def plot_value_array(prediction_probabilities, true_label):
+        pp.xticks([])
+        pp.yticks([])
+        pp.grid(False)
+        plot = pp.bar(range(num_labels), prediction_probabilities, color="#777777")
+        pp.ylim([0, 1])
+        predicted_label = np.argmax(prediction_probabilities)
+        plot[predicted_label].set_color('red')
+        plot[true_label].set_color('blue')
+
+    num_rows = 5
+    num_cols = 3
+    num_images = num_rows * num_cols
+    pp.figure(figsize=(2*2*num_cols, 2*num_rows))
+    for i in range(num_images):
+        pp.subplot(num_rows, 2*num_cols, 2*i+1)
+        plot_image(predictions[i], test_labels[i], test_images[i])
+        pp.subplot(num_rows, 2*num_cols, 2*i+2)
+        plot_value_array(predictions[i], test_labels[i])
+    pp.show()
