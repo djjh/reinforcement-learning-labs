@@ -19,14 +19,13 @@ setup(
         'joblib',
         'matplotlib',
         'mpi4py',
-        'numpy',
+        'numpy==1.16.1',  # 1.16.1 is required to load the imbd dataset (for now)
         'pandas',
         'pytest',
         'psutil',
         'scipy',
         'seaborn==0.8.1',
         'tensorflow>=1.13.0',
-        # 'tf-nightly>=1.14.0',
         'tqdm'
     ],
     description="Excercises in reinforcement learning.",
