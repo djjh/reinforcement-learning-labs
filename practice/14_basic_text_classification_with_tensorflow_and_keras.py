@@ -9,7 +9,7 @@ import random
 #######################################
 
 num_words = 10000
-info_logging = False
+info_logging = True
 random_seed = 0
 
 
@@ -154,9 +154,9 @@ results = model.evaluate(test_data, test_labels)
 print(results)
 
 
-#
+################################
 # Display Training Performance #
-#
+################################
 
 history_dict = history.history
 print(history_dict.keys())
