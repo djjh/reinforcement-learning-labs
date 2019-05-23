@@ -46,7 +46,7 @@ brew install pyenv
     ```sh
     pyenv global 3.6.3
     ```
-2.  Create the virtual environment. Note that you must use `venv` not others
+2.  Create the virtual environment. Note that you must use `venv`
     to be able to use the framework build of python you just installed.
     ```sh
     cd /path/to/repo-directory
