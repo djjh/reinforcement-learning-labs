@@ -22,7 +22,7 @@ gae_lambda_discount = 0.92
 ##########################
 
 environment = gym.make(environment_name)
-observation_dimension = sum(environment.observation_space.shape)
+observation_dimension = np.prod(environment.observation_space.shape)
 num_actions = environment.action_space.n
 
 

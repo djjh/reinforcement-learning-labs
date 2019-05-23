@@ -22,7 +22,7 @@ value_iterations = 50
 
 environment = gym.make(environment_name)
 num_actions = environment.action_space.n
-observation_dimension = sum(environment.observation_space.shape)
+observation_dimension = np.prod(environment.observation_space.shape)
 
 
 #####################

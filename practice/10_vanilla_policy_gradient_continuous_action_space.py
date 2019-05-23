@@ -44,8 +44,8 @@ epochs_to_render = (0,25,num_epochs-1)
 ##########################
 
 environment = gym.make(environment_name)
-observation_dimensions = sum(environment.observation_space.shape)
-action_dimensions = sum(environment.action_space.shape)
+observation_dimensions = np.prod(environment.observation_space.shape)
+action_dimensions = np.prod(environment.action_space.shape)
 
 assert isinstance(environment.observation_space, gym.spaces.Box), "Observation space must be a Box."
 assert isinstance(environment.action_space, gym.spaces.Box), "Action space must be a Box."

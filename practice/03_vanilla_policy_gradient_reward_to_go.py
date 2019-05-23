@@ -19,7 +19,7 @@ learning_rate = 1e-2
 
 environment = gym.make(environment_name)
 num_actions = environment.action_space.n
-observation_dimensions = sum(environment.observation_space.shape) # How would we deal with other shapes? flatten?
+observation_dimensions = np.prod(environment.observation_space.shape)
 
 
 ################
