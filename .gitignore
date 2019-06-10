@@ -1,12 +1,18 @@
-bin
-share
-pip-selfcheck.json
-pyvenv.cfg
+
+log
 
 
 # OSX ################################
 
 .DS_Store
+
+
+# Python Venv #########################
+
+bin
+share
+pip-selfcheck.json
+pyvenv.cfg
 
 
 # Python ##############################

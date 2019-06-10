@@ -13,6 +13,7 @@ setup(
     py_modules=['reinforcement-learning-labs'],
     version=__version__,#'0.1',
     install_requires=[
+        'coloredlogs',
         'cloudpickle==0.5.2',
         'gym[atari,box2d,classic_control]>=0.10.8',
         'ipython',
@@ -26,7 +27,9 @@ setup(
         'scipy',
         'seaborn==0.8.1',
         'tensorflow>=1.13.0',
-        'tqdm'
+        'tensorflow-probability>=0.6.0',
+        'tqdm',
+        'nevergrad'
     ],
     description="Excercises in reinforcement learning.",
     author="Dylan Holmes",
