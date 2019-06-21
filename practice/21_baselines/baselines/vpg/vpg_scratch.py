@@ -12,15 +12,6 @@ import random
 from rl import *
 
 
-class RecordingPolicy:
-    def __init__(self, policy):
-        self.policy = policy
-        self.probabilities = []
-    def action(self, observation, deterministic):
-        action, probability_distribution = self.policy.step(observation, deterministic)
-        self.probabilities.append(probability_distribution.probabilities)
-        return action
-
 class VPG:
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, min_steps_per_batch):
