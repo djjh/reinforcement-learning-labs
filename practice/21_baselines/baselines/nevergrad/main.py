@@ -14,28 +14,28 @@ from rl import *
 class Nevergrad:
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, optimizer, budget, low, high):
-        self.environment = environment
-        self.random_seed = random_seed
-        self.policy_factory = policy_factory
-        self.create_rollout = create_rollout
-        self.budget = budget
-        self.low = low
-        self.high = high
-        self.deterministic_update_policy = True
+        self._environment = environment
+        self._random_seed = random_seed
+        self._policy_factory = policy_factory
+        self._create_rollout = create_rollout
+        self._budget = budget
+        self._low = low
+        self._high = high
+        self._deterministic_update_policy = True
 
-        self.observation_space = environment.observation_space
-        self.action_space = environment.action_space
-        self.policy = self.policy_factory.create(
-            observation_space=self.observation_space,
-            action_space=self.action_space,
+        self._observation_space = environment.observation_space
+        self._action_space = environment.action_space
+        self._policy = self._policy_factory.create(
+            observation_space=self._observation_space,
+            action_space=self._action_space,
             pd_factory_factory=ProbabilityDistributionFactoryFactory())
-        self.policy_return = -np.inf
-        self.policy_steps = -np.inf
+        self._policy_return = -np.inf
+        self._policy_steps = -np.inf
 
-        self.shape = self.policy.get_parameters()['model'].shape
-        self.dims = np.prod(self.shape)
-        instrumentation = ng.Instrumentation(ng.var.Array(self.dims).bounded(low, high))
-        self.optimizer = optimizer(instrumentation=instrumentation, budget=budget)
+        self._shape = self._policy.get_parameters()['model'].shape
+        self._dims = np.prod(self._shape)
+        instrumentation = ng.Instrumentation(ng.var.Array(self._dims).bounded(low, high))
+        self._optimizer = optimizer(instrumentation=instrumentation, budget=budget)
 
     def __enter__(self):
         return self
@@ -44,38 +44,38 @@ class Nevergrad:
         pass
 
     def action(self, observation, deterministic):
-        return self.policy.action(observation, deterministic)
+        return self._policy.action(observation, deterministic)
 
     def update(self):
 
         def rewards(parameters):
 
-            parameters = np.array(parameters).reshape(self.shape)
+            parameters = np.array(parameters).reshape(self._shape)
             # May want to include multiple iterations here in case of a stochastic environment or policy.
-            policy = self.policy_factory.create(
-                observation_space=self.observation_space,
-                action_space=self.action_space,
+            policy = self._policy_factory.create(
+                observation_space=self._observation_space,
+                action_space=self._action_space,
                 pd_factory_factory=ProbabilityDistributionFactoryFactory())
             policy.set_parameters({'model': parameters})
-            episode = self.create_rollout(
-                self.environment,
+            episode = self._create_rollout(
+                self._environment,
                 policy,
-                random_seed=self.random_seed,
-                deterministic=self.deterministic_update_policy,
+                random_seed=self._random_seed,
+                deterministic=self._deterministic_update_policy,
                 render=False)
             return -episode.get_return()  # nevergrad optimizers minimize!
 
-        recommendation = self.optimizer.optimize(rewards)
+        recommendation = self._optimizer.optimize(rewards)
         # print(recommendation)
         parameters = recommendation.args[0]
-        parameters = np.array(parameters).reshape(self.shape)
+        parameters = np.array(parameters).reshape(self._shape)
 
-        policy = self.policy_factory.create(
-            observation_space=self.observation_space,
-            action_space=self.action_space,
+        policy = self._policy_factory.create(
+            observation_space=self._observation_space,
+            action_space=self._action_space,
             pd_factory_factory=ProbabilityDistributionFactoryFactory())
         policy.set_parameters({'model': parameters})
-        self.policy = policy
+        self._policy = policy
 
 # environment_name = 'CartPole-v0'
 environment_name = 'MountainCar-v0' # OnePlusOne gets there at least.

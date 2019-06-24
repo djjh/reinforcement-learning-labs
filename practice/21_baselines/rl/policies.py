@@ -1,24 +1,34 @@
 import gym
 import numpy as np
 import random
-import rl
 import scipy.special
 
+from rl import *
 
 class RecordingPolicy:
     def __init__(self, policy):
-        self.policy = policy
-        self.probabilities = []
+        self._policy = policy
+        self._probabilities = []
     def action(self, observation, deterministic):
-        action, probability_distribution = self.policy.step(observation, deterministic)
-        self.probabilities.append(probability_distribution.probabilities)
+        action, probability_distribution = self._policy.step(observation, deterministic)
+        self._probabilities.append(probability_distribution.probabilities)
         return action
 
 
 class LinearPolicyFactory:
 
-    def create(self, framework, observation_space, action_space, pd_factory_factory):
+    def create_policy(self, framework, observation_space, action_space,
+                input_factory, distribution_factory_factory, session):
         if framework == Framework.SCRATCH:
-            return rl.np.LinearPolicy(observation_space, action_space, pd_factory_factory)
+            return rl.np.LinearPolicy(
+                observation_space=observation_space,
+                action_space=action_space,
+                input_factory=input_factory,
+                distribution_factory_factory=distribution_factory_factory)
         elif framework == Framework.TENSORFLOW:
-            return rl.tf.LinearPolicy(observation_space, action_space, pd_factory_factory)
+            return rl.tf.LinearPolicy(
+                observation_space=observation_space,
+                action_space=action_space,
+                input_factory=input_factory,
+                distribution_factory_factory=distribution_factory_factory,
+                session=session)

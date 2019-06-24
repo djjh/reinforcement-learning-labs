@@ -9,13 +9,13 @@ import rl
 class CategoricalProbabilityDistributionFactory:
 
     def __init__(self, n_categories):
-        self.n_categories = n_categories
+        self._n_categories = n_categories
 
     def probability_distribution(self, logits):
         return CategoricalProbabilityDistribution(logits)
 
     def parameter_shape(self):
-        return (self.n_categories,)
+        return (self._n_categories,)
 
     def sample_shape(self):
         return ()
@@ -27,8 +27,8 @@ class CategoricalProbabilityDistributionFactory:
 class CategoricalProbabilityDistribution:
 
     def __init__(self, logits):
-        self.logits = logits
-        self.probabilities = scipy.special.softmax(logits)
+        self._logits = logits
+        self._probabilities = scipy.special.softmax(logits)
 
     def mode(self):
         # The most frequent value is the same as argmax, e.g.
@@ -38,22 +38,22 @@ class CategoricalProbabilityDistribution:
         # and index 2 will be sampled 0.3 of the time.
         # Thus the mode is the index of the value with the highest value,
         # aka argmax.
-        return np.argmax(self.logits)
+        return np.argmax(self._logits)
 
     def sample(self):
-        return np.random.choice(len(self.probabilities), p=self.probabilities)
+        return np.random.choice(len(self._probabilities), p=self._probabilities)
 
 
 class DiagonalGaussianProbabilityDistributionFactory:
 
     def __init__(self, shape):
-        self.shape = shape
+        self._shape = shape
 
     def probability_distribution(self, mean):
         return DiagonalGaussianProbabilityDistribution(mean)
 
     def parameter_shape(self):
-        return self.shape
+        return self._shape
 
     def sample_shape(self):
         return ()
@@ -64,12 +64,12 @@ class DiagonalGaussianProbabilityDistributionFactory:
 class DiagonalGaussianProbabilityDistribution:
 
     def __init__(self, mean):
-        self.mean = mean
-        self.logstd = 0.0
-        self.std = 0.0 #np.exp(self.logstd)
+        self._mean = mean
+        self._logstd = 0.0
+        self._std = 0.0 #np.exp(self._logstd)
 
     def mode(self):
-        return self.mean
+        return self._mean
 
     def sample(self):
-        return self.mean.shape + self.std * np.random.standard_normal(self.mean.shape)
+        return self._mean.shape + self._std * np.random.standard_normal(self._mean.shape)

@@ -15,21 +15,21 @@ from rl import *
 class VPG:
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, min_steps_per_batch):
-        self.environment = environment
-        self.random_seed = random_seed
-        self.policy_factory = policy_factory
-        self.create_rollout = create_rollout
-        self.min_steps_per_batch = min_steps_per_batch
-        self.deterministic_update_policy = False
+        self._environment = environment
+        self._random_seed = random_seed
+        self._policy_factory = policy_factory
+        self._create_rollout = create_rollout
+        self._min_steps_per_batch = min_steps_per_batch
+        self._deterministic_update_policy = False
 
-        self.observation_space = environment.observation_space
-        self.action_space = environment.action_space
-        self.policy = self.policy_factory.create(
-            observation_space=self.observation_space,
-            action_space=self.action_space,
+        self._observation_space = environment.observation_space
+        self._action_space = environment.action_space
+        self._policy = self._policy_factory.create(
+            observation_space=self._observation_space,
+            action_space=self._action_space,
             pd_factory_factory=ProbabilityDistributionFactoryFactory())
-        self.policy_return = -np.inf
-        self.policy_steps = -np.inf
+        self._policy_return = -np.inf
+        self._policy_steps = -np.inf
 
     def __enter__(self):
         return self
@@ -38,19 +38,19 @@ class VPG:
         pass
 
     def action(self, observation, deterministic):
-        return self.policy.action(observation, deterministic)
+        return self._policy.action(observation, deterministic)
 
     def update(self):
         episodes = Episodes()
         episodes_probabilities = []
 
-        while episodes.num_steps() < self.min_steps_per_batch:
-            recording_policy = RecordingPolicy(self.policy)
-            episode = self.create_rollout(
-                self.environment,
+        while episodes.num_steps() < self._min_steps_per_batch:
+            recording_policy = RecordingPolicy(self._policy)
+            episode = self._create_rollout(
+                self._environment,
                 recording_policy,
-                random_seed=self.random_seed,
-                deterministic=self.deterministic_update_policy,
+                random_seed=self._random_seed,
+                deterministic=self._deterministic_update_policy,
                 render=False)
             episodes.append(episode)
             episodes_probabilities.append(recording_policy.probabilities)
@@ -81,9 +81,9 @@ class VPG:
 
         for i in range(len(grads)):
             for j in range(len(grads[i])):
-                self.policy.model += 0.0025 * grads[i][j] * sum([ r * (0.99 ** r) for t,r in enumerate(rewards[i][j:])])
+                self._policy.model += 0.0025 * grads[i][j] * sum([ r * (0.99 ** r) for t,r in enumerate(rewards[i][j:])])
 
-        # print(self.policy.model)
+        # print(self._policy.model)
 
 environment_name = 'CartPole-v0'
 # environment_name = 'MountainCar-v0'

@@ -4,51 +4,60 @@ import random
 
 class Episode:
     def __init__(self):
-        self.observations = []
-        self.actions = []
-        self.rewards = []
+        self._observations = []
+        self._actions = []
+        self._rewards = []
 
     def append(self, observation, action, reward):
-        self.observations.append(observation)
-        self.actions.append(action)
-        self.rewards.append(reward)
+        self._observations.append(observation)
+        self._actions.append(action)
+        self._rewards.append(reward)
 
     def get_return(self):
-        return sum(self.rewards)
+        return sum(self._rewards)
 
     def __len__(self):
-        return len(self.observations)
+        return len(self._observations)
+
+    def get_observations(self):
+        return self._observations
+
+    def get_actions(self):
+        return self._actions
+
+    def get_rewards(self):
+        return self._rewards
 
 
 class Episodes:
     def __init__(self):
-        self.episodes = []
-        self.cumulative_length = 0
+        self._episodes = []
+        self._cumulative_length = 0
 
     def __iter__(self):
-        return iter(self.episodes)
+        return iter(self._episodes)
 
     def __getitem__(self, index):
-        return self.episodes[index]
+        return self._episodes[index]
 
     def __len__(self):
-        return len(self.episodes)
+        return len(self._episodes)
 
     def append(self, episode):
-        self.episodes.append(episode)
-        self.cumulative_length += len(episode)
+        self._episodes.append(episode)
+        self._cumulative_length += len(episode)
 
     def num_steps(self):
-        return self.cumulative_length
+        return self._cumulative_length
 
     def get_batch_observations(self):
         return [observation
-            for episode in self.episodes
+            for episode in self._episodes
             for observation in episode.observations]
 
     def get_batch_actions(self):
         return [action
-            for episode in self.episodes
+            for episode in self._episodes
             for action in episode.actions]
 
 def rollout(environment, policy, random_seed, deterministic, render):
@@ -88,8 +97,6 @@ def run(algorithm_function, environment_function, specification, random_seed, ma
         max_episode_steps = specification.max_episode_steps
         reward_threshold = specification.reward_threshold
         has_reward_threshold = reward_threshold is not None
-
-
 
         for epoch in range(1, max_epochs+1):
 
