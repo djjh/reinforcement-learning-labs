@@ -6,7 +6,7 @@ import scipy.special
 import rl
 
 
-class CategoricalProbabilityDistributionFactory:
+class CategoricalProbabilityDistributionType:
 
     def __init__(self, n_categories):
         self._n_categories = n_categories
@@ -43,8 +43,11 @@ class CategoricalProbabilityDistribution:
     def sample(self):
         return np.random.choice(len(self._probabilities), p=self._probabilities)
 
+    def probabilities(self):
+        return self._probabilities
 
-class DiagonalGaussianProbabilityDistributionFactory:
+
+class DiagonalGaussianProbabilityDistributionType:
 
     def __init__(self, shape):
         self._shape = shape
@@ -73,3 +76,6 @@ class DiagonalGaussianProbabilityDistribution:
 
     def sample(self):
         return self._mean.shape + self._std * np.random.standard_normal(self._mean.shape)
+
+    def probabilities(self):
+        raise NotImplementedError()

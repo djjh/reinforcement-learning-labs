@@ -8,10 +8,20 @@ import gym
 import nevergrad as ng
 import numpy as np
 import random
+import rl
 
-from rl import *
+from rl import Episodes
+from rl import Framework
+from rl import InputFactory
+from rl import LinearPolicyFactory
+from rl import ProbabilityDistributionTypeFactory
+from rl import RecordingPolicy
+from rl import rollout
+from rl import run
 
 class Nevergrad:
+
+    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, optimizer, budget, low, high):
         self._environment = environment
@@ -25,10 +35,7 @@ class Nevergrad:
 
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
-        self._policy = self._policy_factory.create(
-            observation_space=self._observation_space,
-            action_space=self._action_space,
-            pd_factory_factory=ProbabilityDistributionFactoryFactory())
+        self._policy = self._create_policy()
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
 
@@ -36,6 +43,13 @@ class Nevergrad:
         self._dims = np.prod(self._shape)
         instrumentation = ng.Instrumentation(ng.var.Array(self._dims).bounded(low, high))
         self._optimizer = optimizer(instrumentation=instrumentation, budget=budget)
+
+    def _create_policy(self):
+        return self._policy_factory.create_policy(
+            framework=self.FRAMEWORK,
+            observation_space=self._observation_space,
+            action_space=self._action_space,
+            session=None)
 
     def __enter__(self):
         return self
@@ -49,13 +63,9 @@ class Nevergrad:
     def update(self):
 
         def rewards(parameters):
-
             parameters = np.array(parameters).reshape(self._shape)
             # May want to include multiple iterations here in case of a stochastic environment or policy.
-            policy = self._policy_factory.create(
-                observation_space=self._observation_space,
-                action_space=self._action_space,
-                pd_factory_factory=ProbabilityDistributionFactoryFactory())
+            policy = self._create_policy()
             policy.set_parameters({'model': parameters})
             episode = self._create_rollout(
                 self._environment,
@@ -70,10 +80,7 @@ class Nevergrad:
         parameters = recommendation.args[0]
         parameters = np.array(parameters).reshape(self._shape)
 
-        policy = self._policy_factory.create(
-            observation_space=self._observation_space,
-            action_space=self._action_space,
-            pd_factory_factory=ProbabilityDistributionFactoryFactory())
+        policy = self._create_policy()
         policy.set_parameters({'model': parameters})
         self._policy = policy
 
@@ -91,10 +98,13 @@ def environment_function():
     return gym.make(environment_name)
 
 def algorithm_function(environment):
+    policy_factory = LinearPolicyFactory(
+        input_factory=InputFactory(),
+        distribution_type_factory=ProbabilityDistributionTypeFactory())
     return Nevergrad(
         environment=environment,
         random_seed=random_seed,
-        policy_factory=LinearPolicyFactory(),
+        policy_factory=policy_factory,
         create_rollout=rollout,
         optimizer=optimizer,
         budget=400,
@@ -111,7 +121,13 @@ def algorithm_function(environment):
 
 
 def main():
-    run(algorithm_function, environment_function, specification, random_seed, max_epochs)
+    run(
+        algorithm_function=algorithm_function,
+        environment_function=environment_function,
+        specification=specification,
+        random_seed=random_seed,
+        max_epochs=max_epochs,
+        deterministic=True)
 
 
 

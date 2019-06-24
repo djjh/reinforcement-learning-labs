@@ -7,18 +7,18 @@ import rl
 
 from rl import Framework
 
-class ProbabilityDistributionFactoryFactory:
+class ProbabilityDistributionTypeFactory:
 
-    def create_probability_distribution_factory(self, framework, space):
+    def create_probability_distribution_type(self, framework, space):
         if framework == Framework.SCRATCH:
             if isinstance(space, gym.spaces.Discrete):
-                return rl.np.CategoricalProbabilityDistributionFactory(space.n)
+                return rl.np.CategoricalProbabilityDistributionType(space.n)
             elif isinstance(space, gym.spaces.Box):
-                return rl.np.DiagonalGaussianProbabilityDistributionFactory(space.shape)
+                return rl.np.DiagonalGaussianProbabilityDistributionType(space.shape)
             else:
                 raise NotImplementedError()
         elif framework == Framework.TENSORFLOW:
             if isinstance(space, gym.spaces.Discrete):
-                return rl.tf.CategoricalProbabilityDistributionFactory(space.n)
+                return rl.tf.CategoricalProbabilityDistributionType(space.n)
             else:
                 raise NotImplementedError()

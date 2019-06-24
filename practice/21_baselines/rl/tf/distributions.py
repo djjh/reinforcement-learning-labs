@@ -7,7 +7,7 @@ import tensorflow as tf
 from rl import Framework
 
 
-class CategoricalProbabilityDistributionFactory:
+class CategoricalProbabilityDistributionType:
 
     FRAMEWORK = Framework.TENSORFLOW
 

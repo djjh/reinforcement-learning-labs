@@ -8,11 +8,21 @@ import gym
 import nevergrad as ng
 import numpy as np
 import random
+import rl
 
-from rl import *
+from rl import Episodes
+from rl import Framework
+from rl import InputFactory
+from rl import LinearPolicyFactory
+from rl import ProbabilityDistributionTypeFactory
+from rl import RecordingPolicy
+from rl import rollout
+from rl import run
 
 
 class VPG:
+
+    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, min_steps_per_batch):
         self._environment = environment
@@ -24,10 +34,11 @@ class VPG:
 
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
-        self._policy = self._policy_factory.create(
+        self._policy = self._policy_factory.create_policy(
+            framework=self.FRAMEWORK,
             observation_space=self._observation_space,
             action_space=self._action_space,
-            pd_factory_factory=ProbabilityDistributionFactoryFactory())
+            session=None)  # Better way to handle this?
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
 
@@ -53,7 +64,7 @@ class VPG:
                 deterministic=self._deterministic_update_policy,
                 render=False)
             episodes.append(episode)
-            episodes_probabilities.append(recording_policy.probabilities)
+            episodes_probabilities.append(recording_policy.get_probabilities())
 
         grads = []
         rewards = []
@@ -63,9 +74,9 @@ class VPG:
             episode = episodes[i]
             episode_probabilities = episodes_probabilities[i]
             for j in range(len(episode)):
-                observation = episode.observations[j]
-                action = episode.actions[j]
-                reward = episode.rewards[j]
+                observation = episode.get_observations()[j]
+                action = episode.get_actions()[j]
+                reward = episode.get_rewards()[j]
                 probabilities = episode_probabilities[j]
 
                 softmax = probabilities
@@ -81,7 +92,7 @@ class VPG:
 
         for i in range(len(grads)):
             for j in range(len(grads[i])):
-                self._policy.model += 0.0025 * grads[i][j] * sum([ r * (0.99 ** r) for t,r in enumerate(rewards[i][j:])])
+                self._policy._model += 0.0025 * grads[i][j] * sum([ r * (0.99 ** r) for t,r in enumerate(rewards[i][j:])])
 
         # print(self._policy.model)
 
@@ -96,12 +107,21 @@ def environment_function():
     return gym.make(environment_name)
 
 def algorithm_function(environment):
+    policy_factory = LinearPolicyFactory(
+        input_factory=InputFactory(),
+        distribution_type_factory=ProbabilityDistributionTypeFactory())
     return VPG(
         environment=environment,
         random_seed=random_seed,
-        policy_factory=LinearPolicyFactory(),
+        policy_factory=policy_factory,
         create_rollout=rollout,
         min_steps_per_batch=200)
 
 if __name__ == '__main__':
-    run(algorithm_function, environment_function, specification, random_seed, max_epochs)
+    run(
+        algorithm_function=algorithm_function,
+        environment_function=environment_function,
+        specification=specification,
+        random_seed=random_seed,
+        max_epochs=max_epochs,
+        deterministic=True)

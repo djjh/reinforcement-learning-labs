@@ -4,14 +4,23 @@ from pathlib import Path
 # For now we can operate this way...
 sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..')).resolve()))
 
-
 import gym
 import numpy as np
 import random
+import rl
 
-from rl import *
+from rl import Episodes
+from rl import Framework
+from rl import InputFactory
+from rl import LinearPolicyFactory
+from rl import ProbabilityDistributionTypeFactory
+from rl import RecordingPolicy
+from rl import rollout
+from rl import run
 
 class RandomSearch:
+
+    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, batch_size, explore):
         self._environment = environment
@@ -24,12 +33,16 @@ class RandomSearch:
 
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
-        self._policy = self._policy_factory.create(
-            observation_space=self._observation_space,
-            action_space=self._action_space,
-            pd_factory_factory=ProbabilityDistributionFactoryFactory())
+        self._policy = self._create_policy()
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
+
+    def _create_policy(self):
+        return self._policy_factory.create_policy(
+            framework=self.FRAMEWORK,
+            observation_space=self._observation_space,
+            action_space=self._action_space,
+            session=None)
 
     def __enter__(self):
         return self
@@ -49,10 +62,7 @@ class RandomSearch:
         best_policy = None
         parameters = self._policy.get_parameters()['model']
         for i in range(self._batch_size):
-            policy = self._policy_factory.create(
-                observation_space=self._observation_space,
-                action_space=self._action_space,
-                pd_factory_factory=ProbabilityDistributionFactoryFactory())
+            policy = self._create_policy()
             policy.set_parameters({'model': random_parameter(self._explore, parameters)})
             episode = self._create_rollout(
                 self._environment,
@@ -86,19 +96,22 @@ def environment_function():
 
 # Wins at 24 epochs.
 def algorithm_function(environment):
+    policy_factory = LinearPolicyFactory(
+        input_factory=InputFactory(),
+        distribution_type_factory=ProbabilityDistributionTypeFactory())
     return RandomSearch(
         environment=environment,
         random_seed=random_seed,
-        policy_factory=LinearPolicyFactory(),
+        policy_factory=policy_factory,
         create_rollout=rollout,
         batch_size=1,
         explore=0.5)
 
-
-def main():
-    run(algorithm_function, environment_function, specification, random_seed, max_epochs)
-
-
-
 if __name__ == '__main__':
-    main()
+    run(
+        algorithm_function=algorithm_function,
+        environment_function=environment_function,
+        specification=specification,
+        random_seed=random_seed,
+        max_epochs=max_epochs,
+        deterministic=True)

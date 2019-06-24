@@ -4,15 +4,23 @@ from pathlib import Path
 # For now we can operate this way...
 sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..')).resolve()))
 
-
 import gym
 import numpy as np
 import random
+import rl
 
-from rl import *
-
+from rl import Episodes
+from rl import Framework
+from rl import InputFactory
+from rl import LinearPolicyFactory
+from rl import ProbabilityDistributionTypeFactory
+from rl import RecordingPolicy
+from rl import rollout
+from rl import run
 
 class UniformRandom:
+
+    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, batch_size, low, high):
         self._environment = environment
@@ -26,12 +34,16 @@ class UniformRandom:
 
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
-        self._policy = self._policy_factory.create(
-            observation_space=self._observation_space,
-            action_space=self._action_space,
-            pd_factory_factory=ProbabilityDistributionFactoryFactory())
+        self._policy = self._create_policy()
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
+
+    def _create_policy(self):
+        return self._policy_factory.create_policy(
+            framework=self.FRAMEWORK,
+            observation_space=self._observation_space,
+            action_space=self._action_space,
+            session=None)
 
     def __enter__(self):
         return self
@@ -55,10 +67,7 @@ class UniformRandom:
 
         for i in range(self._batch_size):
 
-            policy = self._policy_factory.create(
-                observation_space=self._observation_space,
-                action_space=self._action_space,
-                pd_factory_factory=ProbabilityDistributionFactoryFactory())
+            policy = self._create_policy()
             policy.set_parameters({'model': uniform_sample_new_parameters(parameters)})
             episode = self._create_rollout(
                 self._environment,
@@ -80,8 +89,9 @@ class UniformRandom:
 
 
 
+environment_name = 'CartPole-v0'
 # environment_name = 'MountainCar-v0'
-environment_name = 'Pendulum-v0'
+# environment_name = 'Pendulum-v0'
 random_seed = 0
 max_epochs = 10000
 specification = gym.spec(environment_name)
@@ -89,36 +99,24 @@ specification = gym.spec(environment_name)
 def environment_function():
     return gym.make(environment_name)
 
-# # environment_name = 'CartPole-v0'
-# # Wins at 24 epochs.
-# def algorithm_function(environment):
-#     return UniformRandom(
-#         environment=environment,
-#         random_seed=random_seed,
-#         policy_factory=LinearPolicyFactory(),
-#         create_rollout=rollout,
-#         batch_size=1,
-#         low=-1.0,
-#         high=1.0)
-
-# environment_name = 'Pendulum-v0'
-# environment_name = 'MountainCarContinuous-v0'
-environment_name = 'Pendulum-v0'
-# Loses forever.
 def algorithm_function(environment):
+    policy_factory = LinearPolicyFactory(
+        input_factory=InputFactory(),
+        distribution_type_factory=ProbabilityDistributionTypeFactory())
     return UniformRandom(
         environment=environment,
         random_seed=random_seed,
-        policy_factory=LinearPolicyFactory(),
+        policy_factory=policy_factory,
         create_rollout=rollout,
         batch_size=1,
-        low=-10.0,
-        high=10.0)
-
-def main():
-    run(algorithm_function, environment_function, specification, random_seed, max_epochs)
-
-
+        low=-1.0,
+        high=1.0)
 
 if __name__ == '__main__':
-    main()
+    run(
+        algorithm_function=algorithm_function,
+        environment_function=environment_function,
+        specification=specification,
+        random_seed=random_seed,
+        max_epochs=max_epochs,
+        deterministic=True)

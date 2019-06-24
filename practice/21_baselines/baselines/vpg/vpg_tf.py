@@ -18,7 +18,7 @@ from rl import \
     rollout, \
     LinearPolicyFactory, \
     InputFactory, \
-    ProbabilityDistributionFactoryFactory, \
+    ProbabilityDistributionTypeFactory, \
     Episodes
 
 
@@ -26,16 +26,12 @@ class VanillaPolicyGradient:
 
     FRAMEWORK = Framework.TENSORFLOW
 
-    def __init__(self, environment, random_seed, policy_factory, input_factory, distribution_factory_factory,
-                rollout_factory, min_steps_per_batch):
+    def __init__(self, environment, random_seed, policy_factory, rollout_factory, min_steps_per_batch):
         self._environment = environment
         self._random_seed = random_seed
         self._policy_factory = policy_factory
-        self._input_factory = input_factory
-        self._distribution_factory_factory = distribution_factory_factory
         self._rollout_factory = rollout_factory
         self._min_steps_per_batch = min_steps_per_batch
-
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
 
@@ -55,8 +51,6 @@ class VanillaPolicyGradient:
                 framework=self.FRAMEWORK,
                 observation_space=self._observation_space,
                 action_space=self._action_space,
-                input_factory=self._input_factory,
-                distribution_factory_factory=self._distribution_factory_factory,
                 session=self._session)
 
             self._observations = self._policy.get_observations()
@@ -136,18 +130,21 @@ def environment_function():
     return gym.make(environment_name)
 
 def algorithm_function(environment):
-    # TODO:
-    # policy_factory = LinearPolicyFactory(
-    #     input_factory=InputFactory(),
-    #     distribution_factory_factory=ProbabilityDistributionFactoryFactory())
+    policy_factory = LinearPolicyFactory(
+        input_factory=InputFactory(),
+        distribution_type_factory=ProbabilityDistributionTypeFactory())
     return VanillaPolicyGradient(
         environment=environment,
         random_seed=random_seed,
-        policy_factory=LinearPolicyFactory(),
-        input_factory=InputFactory(),
-        distribution_factory_factory=ProbabilityDistributionFactoryFactory(),
+        policy_factory=policy_factory,
         rollout_factory=rollout,
         min_steps_per_batch=1)
 
 if __name__ == '__main__':
-    run(algorithm_function, environment_function, specification, random_seed, max_epochs)
+    run(
+        algorithm_function=algorithm_function,
+        environment_function=environment_function,
+        specification=specification,
+        random_seed=random_seed,
+        max_epochs=max_epochs,
+        deterministic=True)

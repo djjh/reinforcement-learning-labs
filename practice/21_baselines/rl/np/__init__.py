@@ -1,3 +1,6 @@
-from .common import *
-from .distributions import *
-from .policies import *
+from .distributions import \
+    CategoricalProbabilityDistribution, \
+    CategoricalProbabilityDistributionType, \
+    DiagonalGaussianProbabilityDistribution, \
+    DiagonalGaussianProbabilityDistributionType
+from .policies import LinearPolicy

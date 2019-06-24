@@ -82,7 +82,7 @@ def rollout(environment, policy, random_seed, deterministic, render):
     return episode
 
 
-def run(algorithm_function, environment_function, specification, random_seed, max_epochs):
+def run(algorithm_function, environment_function, specification, random_seed, max_epochs, deterministic):
 
     np.random.seed(random_seed)
     random.seed(random_seed)
@@ -110,7 +110,7 @@ def run(algorithm_function, environment_function, specification, random_seed, ma
 
             while win and win_count < required_wins:
                 policy = algorithm  # or should we have def policy(self) -> Policy ?
-                episode = rollout(environment, policy, random_seed=random_seed, deterministic=True, render=False)
+                episode = rollout(environment, policy, random_seed=random_seed, deterministic=deterministic, render=False)
                 episode_steps = len(episode)
                 episode_reward = episode.get_return()
                 episode_stepss.append(episode_steps)
@@ -128,7 +128,7 @@ def run(algorithm_function, environment_function, specification, random_seed, ma
                 break
 
         policy = algorithm   # or should we have def policy(self) -> Policy ?
-        episode = rollout(environment,  policy, random_seed=random_seed, deterministic=True, render=True)
+        episode = rollout(environment,  policy, random_seed=random_seed, deterministic=deterministic, render=True)
         episode_steps = len(episode)
         episode_reward = episode.get_return()
 
