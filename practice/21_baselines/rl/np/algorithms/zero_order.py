@@ -2,9 +2,10 @@ import sys, os
 from pathlib import Path
 
 # For now we can operate this way...
-sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..')).resolve()))
+sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
 
 import gym
+import nevergrad as ng
 import numpy as np
 import random
 import rl
@@ -18,17 +19,18 @@ from rl import RecordingPolicy
 from rl import rollout
 from rl import run
 
-class RandomSearch:
+class Nevergrad:
 
     FRAMEWORK = Framework.SCRATCH
 
-    def __init__(self, environment, random_seed, policy_factory, create_rollout, batch_size, explore):
+    def __init__(self, environment, random_seed, policy_factory, create_rollout, optimizer, budget, low, high):
         self._environment = environment
         self._random_seed = random_seed
         self._policy_factory = policy_factory
         self._create_rollout = create_rollout
-        self._batch_size = batch_size
-        self._explore = explore
+        self._budget = budget
+        self._low = low
+        self._high = high
         self._deterministic_update_policy = True
 
         self._observation_space = environment.observation_space
@@ -36,6 +38,11 @@ class RandomSearch:
         self._policy = self._create_policy()
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
+
+        self._shape = self._policy.get_parameters()['model'].shape
+        self._dims = np.prod(self._shape)
+        instrumentation = ng.Instrumentation(ng.var.Array(self._dims).bounded(low, high))
+        self._optimizer = optimizer(instrumentation=instrumentation, budget=budget)
 
     def _create_policy(self):
         return self._policy_factory.create_policy(
@@ -51,63 +58,69 @@ class RandomSearch:
         pass
 
     def action(self, observation, deterministic):
-        action = self._policy.action(observation, deterministic)
-        return action
+        return self._policy.action(observation, deterministic)
 
     def update(self):
-        def random_parameter(explore, p):
-            return p + explore * np.random.standard_normal(p.shape)
-        best_steps = -np.inf
-        best_return = -np.inf
-        best_policy = None
-        parameters = self._policy.get_parameters()['model']
-        for i in range(self._batch_size):
+
+        def rewards(parameters):
+            parameters = np.array(parameters).reshape(self._shape)
+            # May want to include multiple iterations here in case of a stochastic environment or policy.
             policy = self._create_policy()
-            policy.set_parameters({'model': random_parameter(self._explore, parameters)})
+            policy.set_parameters({'model': parameters})
             episode = self._create_rollout(
                 self._environment,
                 policy,
                 random_seed=self._random_seed,
                 deterministic=self._deterministic_update_policy,
                 render=False)
-            episode_return = episode.get_return()
-            episode_steps = len(episode)
-            # print('\n', episode_return)
-            if episode_return > best_return or episode_steps > best_steps:
-                best_return = episode_return
-                best_steps = episode_steps
-                best_policy = policy
-        if best_return >= self._policy_return or best_steps >= self._policy_steps:
-            self._policy_return = best_return
-            self._policy_steps = best_steps
-            self._policy = best_policy
+            return -episode.get_return()  # nevergrad optimizers minimize!
 
-# def main():
+        recommendation = self._optimizer.optimize(rewards)
+        # print(recommendation)
+        parameters = recommendation.args[0]
+        parameters = np.array(parameters).reshape(self._shape)
 
-environment_name = 'CartPole-v0'
-# environment_name = 'MountainCar-v0'
+        policy = self._create_policy()
+        policy.set_parameters({'model': parameters})
+        self._policy = policy
+
+# environment_name = 'CartPole-v0'
+environment_name = 'MountainCar-v0' # OnePlusOne gets there at least.
 # environment_name = 'Pendulum-v0'
+optimizer = ng.optimizers.OnePlusOne
+# optimizer = ng.optimizers.TwoPointsDE
+# optimizer = ng.optimizers.CMA
 random_seed = 0
-max_epochs = 10000
+max_epochs = 1
 specification = gym.spec(environment_name)
 
 def environment_function():
     return gym.make(environment_name)
 
-# Wins at 24 epochs.
 def algorithm_function(environment):
     policy_factory = LinearPolicyFactory(
         input_factory=InputFactory(),
         distribution_type_factory=ProbabilityDistributionTypeFactory())
-    return RandomSearch(
+    return Nevergrad(
         environment=environment,
         random_seed=random_seed,
         policy_factory=policy_factory,
         create_rollout=rollout,
-        batch_size=1,
-        explore=0.5)
+        optimizer=optimizer,
+        budget=400,
+        low=-1.0,
+        high=1.0)
 
-if __name__ == '__main__':
+# print(specification.max_episode_seconds)
+# print(specification.max_episode_steps)
+# print(specification.nondeterministic)
+# print(specification.reward_threshold)
+# print(specification.tags)
+# print(specification.timestep_limit)
+# print(specification.trials)
+
+
+def main():
     run(
         algorithm_function=algorithm_function,
         environment_function=environment_function,
@@ -115,3 +128,8 @@ if __name__ == '__main__':
         random_seed=random_seed,
         max_epochs=max_epochs,
         deterministic=True)
+
+
+
+if __name__ == '__main__':
+    main()

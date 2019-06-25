@@ -2,7 +2,7 @@ import sys, os
 from pathlib import Path
 
 # For now we can operate this way...
-sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..')).resolve()))
+sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
 
 import gym
 import numpy as np

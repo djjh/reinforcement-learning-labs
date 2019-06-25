@@ -2,7 +2,7 @@ import sys, os
 from pathlib import Path
 
 # For now we can operate this way...
-sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..')).resolve()))
+sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
 
 import gym
 import nevergrad as ng
@@ -20,7 +20,7 @@ from rl import rollout
 from rl import run
 
 
-class VPG:
+class VanillaPolicyGradient:
 
     FRAMEWORK = Framework.SCRATCH
 
