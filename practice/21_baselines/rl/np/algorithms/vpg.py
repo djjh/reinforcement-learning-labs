@@ -1,8 +1,8 @@
-import sys, os
-from pathlib import Path
-
-# For now we can operate this way...
-sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
+# import sys, os
+# from pathlib import Path
+#
+# # For now we can operate this way...
+# sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
 
 import gym
 import nevergrad as ng
@@ -17,18 +17,17 @@ from rl import LinearPolicyFactory
 from rl import ProbabilityDistributionTypeFactory
 from rl import RecordingPolicy
 from rl import rollout
-from rl import run
 
 
 class VanillaPolicyGradient:
 
     FRAMEWORK = Framework.SCRATCH
 
-    def __init__(self, environment, random_seed, policy_factory, create_rollout, min_steps_per_batch):
+    def __init__(self, environment, random_seed, policy_factory, rollout_factory, min_steps_per_batch):
         self._environment = environment
         self._random_seed = random_seed
         self._policy_factory = policy_factory
-        self._create_rollout = create_rollout
+        self._rollout_factory = rollout_factory
         self._min_steps_per_batch = min_steps_per_batch
         self._deterministic_update_policy = False
 
@@ -57,7 +56,7 @@ class VanillaPolicyGradient:
 
         while episodes.num_steps() < self._min_steps_per_batch:
             recording_policy = RecordingPolicy(self._policy)
-            episode = self._create_rollout(
+            episode = self._rollout_factory(
                 self._environment,
                 recording_policy,
                 random_seed=self._random_seed,
@@ -93,35 +92,3 @@ class VanillaPolicyGradient:
         for i in range(len(grads)):
             for j in range(len(grads[i])):
                 self._policy._model += 0.0025 * grads[i][j] * sum([ r * (0.99 ** r) for t,r in enumerate(rewards[i][j:])])
-
-        # print(self._policy.model)
-
-environment_name = 'CartPole-v0'
-# environment_name = 'MountainCar-v0'
-# environment_name = 'Pendulum-v0'
-random_seed = 0
-max_epochs = 1000
-specification = gym.spec(environment_name)
-
-def environment_function():
-    return gym.make(environment_name)
-
-def algorithm_function(environment):
-    policy_factory = LinearPolicyFactory(
-        input_factory=InputFactory(),
-        distribution_type_factory=ProbabilityDistributionTypeFactory())
-    return VPG(
-        environment=environment,
-        random_seed=random_seed,
-        policy_factory=policy_factory,
-        create_rollout=rollout,
-        min_steps_per_batch=200)
-
-if __name__ == '__main__':
-    run(
-        algorithm_function=algorithm_function,
-        environment_function=environment_function,
-        specification=specification,
-        random_seed=random_seed,
-        max_epochs=max_epochs,
-        deterministic=True)

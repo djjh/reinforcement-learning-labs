@@ -1,25 +1,8 @@
-import sys, os
-from pathlib import Path
-
-# For now we can operate this way...
-sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
-
-import gym
 import numpy as np
-import random
 import tensorflow as tf
 
-import rl
-import rl.tf
-
-from rl import \
-    Framework, \
-    run, \
-    rollout, \
-    LinearPolicyFactory, \
-    InputFactory, \
-    ProbabilityDistributionTypeFactory, \
-    Episodes
+from rl import Framework
+from rl import Episodes
 
 
 class VanillaPolicyGradient:
@@ -118,33 +101,3 @@ class VanillaPolicyGradient:
     def _get_weights(self, episode):
         rewards = episode.get_rewards()
         return [sum(rewards)] * len(rewards)
-
-environment_name = 'CartPole-v0'
-# environment_name = 'MountainCar-v0'
-# environment_name = 'Pendulum-v0'
-random_seed = 0
-max_epochs = 10000
-specification = gym.spec(environment_name)
-
-def environment_function():
-    return gym.make(environment_name)
-
-def algorithm_function(environment):
-    policy_factory = LinearPolicyFactory(
-        input_factory=InputFactory(),
-        distribution_type_factory=ProbabilityDistributionTypeFactory())
-    return VanillaPolicyGradient(
-        environment=environment,
-        random_seed=random_seed,
-        policy_factory=policy_factory,
-        rollout_factory=rollout,
-        min_steps_per_batch=1)
-
-if __name__ == '__main__':
-    run(
-        algorithm_function=algorithm_function,
-        environment_function=environment_function,
-        specification=specification,
-        random_seed=random_seed,
-        max_epochs=max_epochs,
-        deterministic=True)
