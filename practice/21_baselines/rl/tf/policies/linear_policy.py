@@ -1,16 +1,7 @@
-import gym
-import numpy as np
-import random
-import scipy.special
 import tensorflow as tf
-
-from gym.spaces import Discrete, Box, MultiBinary, MultiDiscrete
-from rl import Framework
 
 
 class LinearPolicy:
-
-    FRAMEWORK = Framework.TENSORFLOW
 
     def __init__(self, observation_space, action_space, input_factory, distribution_type_factory, session):
         self._observation_space = observation_space
@@ -20,10 +11,8 @@ class LinearPolicy:
         self._session = session
 
         self._distribution_factory = self._distribution_type_factory.create_probability_distribution_type(
-            framework=self.FRAMEWORK,
             space=action_space)
         self._input = input_factory.create(
-            framework=self.FRAMEWORK,
             space=self._observation_space,
             batch_size=None)
 

@@ -2,9 +2,9 @@ import sys, os
 from pathlib import Path
 sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..')).resolve()))
 
-from rl import AlgorithmFactory
-from rl import EnvironmentFactory
-from rl import Runner
+from rl.core import AlgorithmFactory
+from rl.core import EnvironmentFactory
+from rl.core import Runner
 
 
 if __name__ == '__main__':
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     ]
     environment_names = [
         'CartPole-v0',
-        'CartPole-v1'
+        # 'CartPole-v1'
     ]
 
     for algorithm_name in algorithm_names:

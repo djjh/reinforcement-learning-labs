@@ -1,27 +1,11 @@
-# import sys, os
-# from pathlib import Path
-#
-# # For now we can operate this way...
-# sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..', '..', '..')).resolve()))
-
-import gym
-import nevergrad as ng
 import numpy as np
-import random
 import rl
 
-from rl import Episodes
-from rl import Framework
-from rl import InputFactory
-from rl import LinearPolicyFactory
-from rl import ProbabilityDistributionTypeFactory
-from rl import RecordingPolicy
-from rl import rollout
+from rl.core import Episodes
+from rl.core import RecordingPolicy
 
 
 class VanillaPolicyGradient:
-
-    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, environment, random_seed, policy_factory, rollout_factory, min_steps_per_batch):
         self._environment = environment
@@ -34,10 +18,8 @@ class VanillaPolicyGradient:
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
         self._policy = self._policy_factory.create_policy(
-            framework=self.FRAMEWORK,
             observation_space=self._observation_space,
-            action_space=self._action_space,
-            session=None)  # Better way to handle this?
+            action_space=self._action_space)
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
 

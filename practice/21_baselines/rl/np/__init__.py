@@ -1,6 +1,5 @@
-from .distributions import \
-    CategoricalProbabilityDistribution, \
-    CategoricalProbabilityDistributionType, \
-    DiagonalGaussianProbabilityDistribution, \
-    DiagonalGaussianProbabilityDistributionType
-from .policies import LinearPolicy
+from . import algorithms
+from . import distributions
+from . import factories
+from . import input
+from . import policies

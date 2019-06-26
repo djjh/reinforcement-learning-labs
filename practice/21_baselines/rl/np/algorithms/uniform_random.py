@@ -1,11 +1,9 @@
 import numpy as np
 
-from rl import Episodes
-from rl import Framework
+from rl.core import Episodes
+
 
 class UniformRandom:
-
-    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, environment, random_seed, policy_factory, create_rollout, batch_size, low, high):
         self._environment = environment
@@ -25,7 +23,6 @@ class UniformRandom:
 
     def _create_policy(self):
         return self._policy_factory.create_policy(
-            framework=self.FRAMEWORK,
             observation_space=self._observation_space,
             action_space=self._action_space,
             session=None)

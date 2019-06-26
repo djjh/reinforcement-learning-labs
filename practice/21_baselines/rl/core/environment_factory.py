@@ -1,6 +1,5 @@
 import gym
 
-
 class EnvironmentFactory:
 
     def __init__(self):

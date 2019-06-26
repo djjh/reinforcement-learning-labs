@@ -1,19 +1,16 @@
 import numpy as np
 import tensorflow as tf
 
-from rl import Framework
-from rl import Episodes
+from rl.core import Episodes
 
 
 class VanillaPolicyGradient:
 
-    FRAMEWORK = Framework.TENSORFLOW
-
-    def __init__(self, environment, random_seed, policy_factory, rollout_factory, min_steps_per_batch):
+    def __init__(self, environment, random_seed, policy_factory, Rollout, min_steps_per_batch):
         self._environment = environment
         self._random_seed = random_seed
         self._policy_factory = policy_factory
-        self._rollout_factory = rollout_factory
+        self._Rollout = Rollout
         self._min_steps_per_batch = min_steps_per_batch
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
@@ -31,7 +28,6 @@ class VanillaPolicyGradient:
             # set random seed here, or somewhere
             self._session = tf.Session(graph=self._graph)
             self._policy = policy_factory.create_policy(
-                framework=self.FRAMEWORK,
                 observation_space=self._observation_space,
                 action_space=self._action_space,
                 session=self._session)
@@ -74,7 +70,7 @@ class VanillaPolicyGradient:
     def _get_episodes(self):
         episodes = Episodes()
         while episodes.num_steps() < self._min_steps_per_batch:
-            episode = self._rollout_factory(
+            episode = self._Rollout(
                 environment=self._environment,
                 policy=self._policy,
                 random_seed=self._random_seed,

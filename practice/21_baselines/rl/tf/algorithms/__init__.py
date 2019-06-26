@@ -1,1 +1,1 @@
-from .vpg import VanillaPolicyGradient
+from .vanilla_policy_gradient import VanillaPolicyGradient

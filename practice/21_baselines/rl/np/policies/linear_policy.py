@@ -4,11 +4,8 @@ import random
 import rl
 import scipy.special
 
-from rl import Framework
 
 class LinearPolicy:
-
-    FRAMEWORK = Framework.SCRATCH
 
     def __init__(self, observation_space, action_space, input_factory, distribution_type_factory):
         self._observation_space = observation_space
@@ -16,15 +13,12 @@ class LinearPolicy:
         self._input_factory = input_factory
         self._distribution_type_factory = distribution_type_factory
 
-        self._distribution_type = self._distribution_type_factory.create_probability_distribution_type(self.FRAMEWORK, action_space)
+        self._distribution_type = self._distribution_type_factory.create_probability_distribution_type(action_space)
 
         self._observation_dimensions = np.prod(observation_space.shape)
         self._action_dimensions = np.prod(self._distribution_type.parameter_shape())
 
         self._model = np.random.randn(self._action_dimensions, self._observation_dimensions)
-
-    def get_framework(self):
-        return self.FRAMEWORK
 
     def get_parameters(self):
         return { 'model': np.array(self._model) }

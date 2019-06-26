@@ -1,4 +1,5 @@
-from .distributions import CategoricalProbabilityDistributionType,\
-    CategoricalProbabilityDistribution
-from .policies import LinearPolicy
-from .input import InputFactory, BoxInput
+from . import algorithms
+from . import distributions
+from . import factories
+from . import input
+from . import policies

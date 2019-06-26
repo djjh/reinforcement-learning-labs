@@ -2,7 +2,7 @@ import gym
 import numpy as np
 import random
 
-from rl import rollout
+from rl.core import Rollout
 
 class Runner:
 
@@ -38,7 +38,7 @@ class Runner:
 
                 while win and win_count < required_wins:
                     policy = algorithm  # or should we have def policy(self) -> Policy ?
-                    episode = rollout(environment, policy, random_seed=random_seed, deterministic=deterministic, render=False)
+                    episode = Rollout(environment, policy, random_seed=random_seed, deterministic=deterministic, render=False)
                     episode_steps = len(episode)
                     episode_reward = episode.get_return()
                     episode_stepss.append(episode_steps)
@@ -56,7 +56,7 @@ class Runner:
                     break
 
             policy = algorithm   # or should we have def policy(self) -> Policy ?
-            episode = rollout(environment,  policy, random_seed=random_seed, deterministic=deterministic, render=True)
+            episode = Rollout(environment,  policy, random_seed=random_seed, deterministic=deterministic, render=True)
             episode_steps = len(episode)
             episode_reward = episode.get_return()
 

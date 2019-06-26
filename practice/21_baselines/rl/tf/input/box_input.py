@@ -5,18 +5,8 @@ import scipy.special
 import tensorflow as tf
 
 from gym.spaces import Discrete, Box, MultiBinary, MultiDiscrete
-from rl import Framework
 
-class InputFactory:
 
-    def create(self, framework, space, batch_size):
-
-        assert framework == Framework.TENSORFLOW, "Unsupported framework, try the delegating InputFactory"
-
-        if isinstance(space, Box):
-            return BoxInput(space, batch_size)
-        else:
-            raise NotImplementedError()
 
 class BoxInput:
 
