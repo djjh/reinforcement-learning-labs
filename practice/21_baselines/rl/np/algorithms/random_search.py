@@ -23,8 +23,7 @@ class RandomSearch:
     def _create_policy(self):
         return self._policy_factory.create_policy(
             observation_space=self._observation_space,
-            action_space=self._action_space,
-            session=None)
+            action_space=self._action_space)
 
     def __enter__(self):
         return self

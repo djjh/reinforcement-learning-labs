@@ -6,20 +6,28 @@ from rl.core import Episodes
 
 class VanillaPolicyGradient:
 
-    def __init__(self, environment, random_seed, policy_factory, Rollout, min_steps_per_batch):
+    def __init__(self, environment, random_seed, policy_factory, Rollout,
+            min_steps_per_batch, learning_rate):
         self._environment = environment
         self._random_seed = random_seed
         self._policy_factory = policy_factory
         self._Rollout = Rollout
         self._min_steps_per_batch = min_steps_per_batch
+        self._learning_rate = learning_rate
+
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
-
-        self._learning_rate = 1e-2
-
         self._graph = None
         self._session = None
         self._policy = None
+        self._observations = None
+        self._actions = None
+        self._weights = None
+        self._log_probabilities = None
+        self._psuedo_loss = None
+        self._train = None
+        self._policy_return = None
+        self._policy_steps = None
 
         self._graph = tf.Graph()
         with self._graph.as_default():

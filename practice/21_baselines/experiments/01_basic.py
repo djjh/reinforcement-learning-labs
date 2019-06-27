@@ -26,12 +26,25 @@ if __name__ == '__main__':
         # 'CartPole-v1'
     ]
 
+    problems = []
+
     for algorithm_name in algorithm_names:
         for environment_name in environment_names:
             print('---- {} - {} ----\n'.format(algorithm_name, environment_name))
-            runner.run(
-                algorithm_name=algorithm_name,
-                environment_name=environment_name,
-                random_seed=0,
-                max_epochs=1000,
-                deterministic=True)
+            try:
+                runner.run(
+                    algorithm_name=algorithm_name,
+                    environment_name=environment_name,
+                    random_seed=0,
+                    max_epochs=1000,
+                    deterministic=True)
+            except Exception as e:
+                problems.append({'algorithm': algorithm_name, 'exception': e})
+
+    if len(problems) > 0:
+        print('Failed:')
+    for problem in problems:
+        print('START------------------------------------')
+        print(problem['algorithm'])
+        print(problem['exception'])
+        print('END------------------------------------')
