@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import tensorflow as tf
 
@@ -6,16 +8,99 @@ from rl.core import Episodes
 
 class VanillaPolicyGradient:
 
-    def __init__(self, environment, random_seed, policy_factory, Rollout, min_steps_per_batch):
+    class HyperParameters:
+
+        _learning_rate = None
+        _min_steps_per_batch = None
+
+        def get_learning_rate(self):
+            return self._learning_rate
+
+        def get_min_steps_per_batch(self):
+            return self._min_steps_per_batch
+
+        class Builder:
+
+            def __init__(self):
+                self._learning_rate = None
+                self._min_steps_per_batch = None
+
+            def learning_rate(self, learning_rate):
+                self._learning_rate = learning_rate
+                return self
+
+            def min_steps_per_batch(self, min_steps_per_batch):
+                self._min_steps_per_batch = min_steps_per_batch
+                return self
+
+            def build(self):
+                hyperparameters = VanillaPolicyGradient.HyperParameters()
+                hyperparameters._learning_rate = self._learning_rate
+                hyperparameters._min_steps_per_batch = self._min_steps_per_batch
+                return hyperparameters
+
+        def builder():
+            return VanillaPolicyGradient.HyperParameters.Builder()
+
+    class Builder:
+
+        def __init__(self):
+            self._environment = None
+            self._random_seed = None
+            self._policy_factory = None
+            self._Rollout = None
+            self._hyperparameters = None
+
+        def environment(self, environment):
+            self._environment = environment
+            return self
+
+        def random_seed(self, random_seed):
+            self._random_seed = random_seed
+            return self
+
+        def policy_factory(self, policy_factory):
+            self._policy_factory = policy_factory
+            return self
+
+        def Rollout(self, Rollout):
+            self._Rollout = Rollout
+            return self
+
+        def min_steps_per_batch(self, min_steps_per_batch):
+            self._min_steps_per_batch = min_steps_per_batch
+            return self
+
+        def hyperparameters(self, hyperparameters):
+            self._hyperparameters = hyperparameters
+            return self
+
+        def build(self):
+            return VanillaPolicyGradient(
+                environment=self._environment,
+                random_seed=self._random_seed,
+                policy_factory=self._policy_factory,
+                Rollout=self._Rollout,
+                min_steps_per_batch=self._min_steps_per_batch,
+                hyperparameters=self._hyperparameters)
+
+    def builder():
+        return VanillaPolicyGradient.Builder()
+
+
+    def __init__(self, environment, random_seed, policy_factory, Rollout, hyperparameters):
         self._environment = environment
         self._random_seed = random_seed
         self._policy_factory = policy_factory
         self._Rollout = Rollout
         self._min_steps_per_batch = min_steps_per_batch
+        self._hyperparameters = hyperparameters
+
         self._observation_space = environment.observation_space
         self._action_space = environment.action_space
 
-        self._learning_rate = 1e-2
+        self._learning_rate = self._hyperparameters.get_learning_rate()
+        self._min_steps_per_batch = self._hyperparameters.get_min_steps_per_batch()
 
         self._graph = None
         self._session = None

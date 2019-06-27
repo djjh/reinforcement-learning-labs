@@ -16,10 +16,10 @@ if __name__ == '__main__':
 
     algorithm_names = [
         'Tensorflow-VanillaPolicyGradient-v0',
-        'Scratch-UniformRandom-v0',
-        'Scratch-RandomSearch-v0',
-        'Scratch-OnePlusOne-v0',
-        'Scratch-VanillaPolicyGradient-v0'
+        # 'Scratch-UniformRandom-v0',
+        # 'Scratch-RandomSearch-v0',
+        # 'Scratch-OnePlusOne-v0',
+        # 'Scratch-VanillaPolicyGradient-v0'
     ]
     environment_names = [
         'CartPole-v0',
