@@ -2,6 +2,8 @@ import sys, os
 from pathlib import Path
 sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..')).resolve()))
 
+import traceback
+
 from rl.core import AlgorithmFactory
 from rl.core import EnvironmentFactory
 from rl.core import Runner
@@ -38,8 +40,8 @@ if __name__ == '__main__':
                     random_seed=0,
                     max_epochs=1000,
                     deterministic=True)
-            except Exception as e:
-                problems.append({'algorithm': algorithm_name, 'exception': e})
+            except:
+                problems.append({'algorithm': algorithm_name, 'exception': traceback.format_exc()})
 
     if len(problems) > 0:
         print('Failed:')
