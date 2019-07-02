@@ -75,7 +75,7 @@ def experiment(algorithm, specification, environment, random_seed, max_epochs, d
             environment.viewer.window.dispatch_events()
 
 
-def generate_experiments(environment_name, random_seed):
+def generate_experiments_for_environment.(environment_name, random_seed):
 
     environment_factory = EnvironmentFactory()
 
@@ -101,8 +101,22 @@ def generate_experiments(environment_name, random_seed):
                             }
                         ],
                         'Rollout': [rl.core.Rollout],
-                        'min_steps_per_batch': [1, 100, 1000],
+                        'min_steps_per_batch': [1, 100],
                         'learning_rate': [1e-2, 5e-3, 1e-3]
+                    },
+                    rl.np.algorithms.VanillaPolicyGradient: {
+                        'environment': [environment],
+                        'random_seed': [random_seed],
+                        'policy_factory': [
+                            {
+                                rl.np.factories.PolicyFactory: {
+                                    'input_factory': [{ rl.np.factories.InputFactory: {} }],
+                                    'distribution_type_factory': [{ rl.np.factories.ProbabilityDistributionTypeFactory: {} }]
+                                }
+                            }
+                        ],
+                        'rollout_factory': [rl.core.Rollout],
+                        'min_steps_per_batch': [1, 100, 1000]
                     }
                 }
             ],
@@ -114,6 +128,8 @@ def generate_experiments(environment_name, random_seed):
         }
     }
     return generate_functions(args)
+
+
 
 
 if __name__ == '__main__':

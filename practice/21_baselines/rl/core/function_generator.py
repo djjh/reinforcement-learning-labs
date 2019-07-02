@@ -4,12 +4,17 @@ from itertools import product
 # Common #
 ##########
 
+class Arg:
+    def __init__(self, name):
+        self._name = name
+
 def generate_functions(args):
     if isinstance(args, dict):
         for k, v in args.items():
             if isinstance(k, type) or callable(k):
                 for kwargs in kwargs_generator(v):
                     def g():
+                        print(kwargs)
                         return k(**kwargs)
                     yield g
             else:
