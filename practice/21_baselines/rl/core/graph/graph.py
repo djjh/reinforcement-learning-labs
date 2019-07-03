@@ -165,12 +165,9 @@ class Specification():
         # Generate a map from top level object (name, class) or (name, function) pairs to instance.
         top = {}
         for n in self.get_providers():
-            if isinstance(n, FunctionNode):
-                top[(n.get_function(), n.get_name())] = instances[n]
-            elif isinstance(n, ValueNode):
-                top[(type(n._value), n.get_name())] = instances[n]
-            else:
-                raise NotImplementedError()
+            top[n.get_name()] = instances[n]
+        if None in top:
+            del top[None]
 
         self.instances = instances
         self.top = top

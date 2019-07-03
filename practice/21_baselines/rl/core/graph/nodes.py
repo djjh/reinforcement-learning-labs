@@ -43,7 +43,6 @@ class FunctionNode(Node):
     def expand(self):
         if self._kwargs == None:
             result = [FunctionNode(function=self._function, kwargs=self._kwargs, name=self._name)]
-            print(result)
         elif isinstance(self._kwargs, dict):
             kwargs_list = self._expand_dict(self._kwargs)
             return [FunctionNode(function=self._function, kwargs=kwargs, name=self._name) for kwargs in kwargs_list]
@@ -78,6 +77,9 @@ class ValuesNode(Node):
         self._values = values
         self._name = name
 
+    def __iter__(self):
+        return iter(self.expand())
+
     def __repr__(self):
         return 'ValueNodes[v={},n={}]'.format(self._value, self._name)
 
@@ -89,6 +91,39 @@ class ValuesNode(Node):
 
     def expand(self):
         return [ValueNode(v,name=self._name) for v in self._values]
+
+class NodesNode(Node):
+
+    def __init__(self, nodes, name):
+        self._nodes = nodes
+        self._name = name
+
+    def __iter__(self):
+        return iter(self.expand())
+
+    def __repr__(self):
+        return 'NodesNode[v={},n={}]'.format(self._nodes, self._name)
+
+    def get_name(self):
+        return self._name
+
+    def get_nodes(self):
+        return self._values
+
+    def expand(self):
+        results = []
+        for n in self._nodes:
+            if isinstance(n, FunctionNode):
+                results.extend(FunctionNode(name=self._name, function=n.get_function(), kwargs=n.get_kwargs()).expand())
+            elif isinstance(n, ValueNode):
+                results.extend(ValueNode(name=self._name, value=n.get_value()).expand())
+            elif isinstance(n, ValuesNode):
+                results.extend(ValuesNode(name=self._name, values=n.get_values()).expand())
+            elif isinstance(n, InjectNode):
+                raise NotImplementedError()
+            else:
+                raise NotImplementedError()
+        return results
 
 class InjectNode(Node):
 

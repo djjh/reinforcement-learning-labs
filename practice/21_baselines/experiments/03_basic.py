@@ -17,6 +17,20 @@ from rl.core import AlgorithmFactory
 from rl.core import EnvironmentFactory
 from rl.core import Runner
 
+def fullname(o):
+  # o.__module__ + "." + o.__class__.__qualname__ is an example in
+  # this context of H.L. Mencken's "neat, plausible, and wrong."
+  # Python makes no guarantees as to whether the __module__ special
+  # attribute is defined, so we take a more circumspect approach.
+  # Alas, the module name is explicitly excluded from __qualname__
+  # in Python 3.
+
+  module = o.__class__.__module__
+  if module is None or module == str.__class__.__module__:
+    return o.__class__.__name__  # Avoid reporting __builtin__
+  else:
+    return module + '.' + o.__class__.__name__
+
 
 class Experiment():
 
@@ -124,23 +138,64 @@ def graphs():
                 function=gym.spec,
                 kwargs={'id': InjectNode(name='environment_name')}),
             FunctionNode(
+                name='tensorflow_policy_factory',
+                function=rl.tf.factories.PolicyFactory,
+                kwargs={
+                    'input_factory': FunctionNode(function=rl.tf.factories.InputFactory),
+                    'distribution_type_factory': FunctionNode(function=rl.tf.factories.ProbabilityDistributionTypeFactory),
+                }
+            ),
+            FunctionNode(
+                name='numpy_policy_factory',
+                function=rl.np.factories.PolicyFactory,
+                kwargs={
+                    'input_factory': FunctionNode(function=rl.np.factories.InputFactory),
+                    'distribution_type_factory': FunctionNode(function=rl.np.factories.ProbabilityDistributionTypeFactory),
+                }
+            ),
+            NodesNode(
                 name='algorithm',
-                function=rl.tf.algorithms.VanillaPolicyGradient,
-                kwargs=[
-                    {
-                        'environment': InjectNode(name='environment'),
-                        'random_seed': InjectNode(name='random_seed'),
-                        'policy_factory': FunctionNode(
-                            function=rl.tf.factories.PolicyFactory,
-                            kwargs={
-                                'input_factory': FunctionNode(function=rl.tf.factories.InputFactory),
-                                'distribution_type_factory': FunctionNode(function=rl.tf.factories.ProbabilityDistributionTypeFactory),
-                            }),
-                        'Rollout': ValueNode(value=rl.core.Rollout),
-                        'min_steps_per_batch': [ValueNode(value=1), ValueNode(value=100)],
-                        'learning_rate': [ValueNode(value=1e-2), ValueNode(value=5e-3), ValueNode(value=1e-3)]
-                    }
-                ]),
+                nodes=[
+                    FunctionNode(
+                        function=rl.tf.algorithms.VanillaPolicyGradient,
+                        kwargs=[
+                            {
+                                'environment': InjectNode(name='environment'),
+                                'random_seed': InjectNode(name='random_seed'),
+                                'policy_factory': InjectNode(name='tensorflow_policy_factory'),
+                                'Rollout': ValueNode(value=rl.core.Rollout),
+                                'min_steps_per_batch': ValuesNode(values=[1, 100]),
+                                'learning_rate': ValuesNode(values=[1e-2, 5e-3, 1e-3])
+                            }
+                        ]
+                    ),
+                    FunctionNode(
+                        function=rl.np.algorithms.VanillaPolicyGradient,
+                        kwargs=[
+                            {
+                                'environment': InjectNode(name='environment'),
+                                'random_seed': InjectNode(name='random_seed'),
+                                'policy_factory': InjectNode(name='numpy_policy_factory'),
+                                'rollout_factory': ValueNode(value=rl.core.Rollout),
+                                'min_steps_per_batch': ValuesNode(values=[1, 100])
+                            }
+                        ]
+                    ),
+                    FunctionNode(
+                        function=rl.np.algorithms.RandomSearch,
+                        kwargs=[
+                            {
+                                'environment': InjectNode(name='environment'),
+                                'random_seed': InjectNode(name='random_seed'),
+                                'policy_factory': InjectNode(name='numpy_policy_factory'),
+                                'create_rollout': ValueNode(value=rl.core.Rollout),
+                                'batch_size': ValuesNode(values=[1, 100]),
+                                'explore': ValuesNode(values=[0.25, 0.5, 0.75])
+                            }
+                        ]
+                    )
+                ]
+            ),
             FunctionNode(
                 name='experiment',
                 function=Experiment,
@@ -166,12 +221,16 @@ if __name__ == '__main__':
 
     problems = []
     for graph in graphs():
-        environment_name = graph.get((str, 'environment_name'))
-        print('---- {} - {} ----\n'.format('something', environment_name))
+        algorithm_class_name = fullname(graph.get('algorithm'))
+        environment_name = graph.get('environment_name')
+        print('---- {} - {} ----\n'.format(algorithm_class_name, environment_name))
         try:
-            graph.get((Experiment, 'experiment')).run()
+            graph.get('experiment').run()
+        except (KeyboardInterrupt, SystemExit):
+            print()
+            exit()
         except:
-            problems.append({'algorithm': 'somthing', 'exception': traceback.format_exc()})
+            problems.append({'algorithm': algorithm_class_name, 'exception': traceback.format_exc()})
 
     if len(problems) > 0:
         print('Failed:')
