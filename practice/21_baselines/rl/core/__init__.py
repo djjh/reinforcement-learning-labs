@@ -2,7 +2,7 @@ from .algorithm_factory import AlgorithmFactory
 from .function_generator import generate_functions
 from .environment_factory import EnvironmentFactory
 from .episode import Episode
-from .episodes import Episodes
+from .experience import Experience
 from .recording_policy import RecordingPolicy
 from .rollout import Rollout
 from .runner import Runner

@@ -1,7 +1,7 @@
 import nevergrad as ng
 import numpy as np
 
-from rl.core import Episodes
+from rl.core import Experience
 
 
 class Nevergrad:

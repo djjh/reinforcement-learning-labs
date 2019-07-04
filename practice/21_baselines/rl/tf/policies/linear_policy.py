@@ -3,10 +3,11 @@ import tensorflow as tf
 
 class LinearPolicy:
 
-    def __init__(self, observation_space, action_space, input_factory, distribution_type_factory, session):
+    def __init__(self, observation_space, action_space, input_factory, distribution_type_factory, learning_rate, session):
         self._observation_space = observation_space
         self._action_space = action_space
         self._input_factory = input_factory
+        self._learning_rate = learning_rate
         self._distribution_type_factory = distribution_type_factory
         self._session = session
 
@@ -24,6 +25,10 @@ class LinearPolicy:
         self._deterministic_actions = self._probability_distribution.mode()
         self._log_probabilities = self._probability_distribution.log_probabilities(self._actions)
 
+        self._advantages = tf.placeholder(shape=(None,), dtype=tf.float32)
+        self._policy_loss = -tf.reduce_mean(self._advantages * self._log_probabilities)
+        self._train_policy = tf.train.AdamOptimizer(learning_rate=self._learning_rate).minimize(self._policy_loss)
+
     def _create_model(self, input, distribution_factory):
 
         # Is this the right thing to do for non-categorical action spaces?
@@ -31,9 +36,6 @@ class LinearPolicy:
 
         previous_layer = input.get_input()
         return  tf.layers.Dense(units=units)(previous_layer)
-
-    def get_framework(self):
-        return LinearPolicy.FRAMEWORK
 
     def get_parameters(self):
         raise NotImplementedError()
@@ -76,3 +78,11 @@ class LinearPolicy:
                 fetches=self._policy_probability,
                 feed_dict={self._observations: observation})
         return action, probabilities
+
+    def update(self, observations, actions, advantages):
+        self._session.run(
+            fetches=self._train_policy,
+            feed_dict={
+                self._observations: observations,
+                self._actions: actions,
+                self._advantages: advantages})

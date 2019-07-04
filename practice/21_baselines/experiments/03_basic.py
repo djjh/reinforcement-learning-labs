@@ -143,6 +143,7 @@ def graphs():
                 kwargs={
                     'input_factory': FunctionNode(function=rl.tf.factories.InputFactory),
                     'distribution_type_factory': FunctionNode(function=rl.tf.factories.ProbabilityDistributionTypeFactory),
+                    'learning_rate': ValuesNode(values=[1e-2, 5e-3, 1e-3])
                 }
             ),
             FunctionNode(
@@ -164,36 +165,35 @@ def graphs():
                                 'random_seed': InjectNode(name='random_seed'),
                                 'policy_factory': InjectNode(name='tensorflow_policy_factory'),
                                 'Rollout': ValueNode(value=rl.core.Rollout),
-                                'min_steps_per_batch': ValuesNode(values=[1, 100]),
-                                'learning_rate': ValuesNode(values=[1e-2, 5e-3, 1e-3])
-                            }
-                        ]
-                    ),
-                    FunctionNode(
-                        function=rl.np.algorithms.VanillaPolicyGradient,
-                        kwargs=[
-                            {
-                                'environment': InjectNode(name='environment'),
-                                'random_seed': InjectNode(name='random_seed'),
-                                'policy_factory': InjectNode(name='numpy_policy_factory'),
-                                'rollout_factory': ValueNode(value=rl.core.Rollout),
                                 'min_steps_per_batch': ValuesNode(values=[1, 100])
                             }
                         ]
                     ),
-                    FunctionNode(
-                        function=rl.np.algorithms.RandomSearch,
-                        kwargs=[
-                            {
-                                'environment': InjectNode(name='environment'),
-                                'random_seed': InjectNode(name='random_seed'),
-                                'policy_factory': InjectNode(name='numpy_policy_factory'),
-                                'create_rollout': ValueNode(value=rl.core.Rollout),
-                                'batch_size': ValuesNode(values=[1, 100]),
-                                'explore': ValuesNode(values=[0.25, 0.5, 0.75])
-                            }
-                        ]
-                    )
+                    # FunctionNode(
+                    #     function=rl.np.algorithms.VanillaPolicyGradient,
+                    #     kwargs=[
+                    #         {
+                    #             'environment': InjectNode(name='environment'),
+                    #             'random_seed': InjectNode(name='random_seed'),
+                    #             'policy_factory': InjectNode(name='numpy_policy_factory'),
+                    #             'rollout_factory': ValueNode(value=rl.core.Rollout),
+                    #             'min_steps_per_batch': ValuesNode(values=[1, 100])
+                    #         }
+                    #     ]
+                    # ),
+                    # FunctionNode(
+                    #     function=rl.np.algorithms.RandomSearch,
+                    #     kwargs=[
+                    #         {
+                    #             'environment': InjectNode(name='environment'),
+                    #             'random_seed': InjectNode(name='random_seed'),
+                    #             'policy_factory': InjectNode(name='numpy_policy_factory'),
+                    #             'create_rollout': ValueNode(value=rl.core.Rollout),
+                    #             'batch_size': ValuesNode(values=[1, 100]),
+                    #             'explore': ValuesNode(values=[0.25, 0.5, 0.75])
+                    #         }
+                    #     ]
+                    # )
                 ]
             ),
             FunctionNode(
