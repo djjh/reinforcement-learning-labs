@@ -25,6 +25,7 @@ class LinearPolicy:
         self._deterministic_actions = self._probability_distribution.mode()
         self._log_probabilities = self._probability_distribution.log_probabilities(self._actions)
 
+        #### ?
         self._advantages = tf.placeholder(shape=(None,), dtype=tf.float32)
         self._policy_loss = -tf.reduce_mean(self._advantages * self._log_probabilities)
         self._train_policy = tf.train.AdamOptimizer(learning_rate=self._learning_rate).minimize(self._policy_loss)

@@ -1,7 +1,7 @@
 import numpy as np
 import rl
 
-from rl.core import Experience
+from rl.core import Episodes
 from rl.core import RecordingPolicy
 
 
@@ -33,7 +33,7 @@ class VanillaPolicyGradient:
         return self._policy.action(observation, deterministic)
 
     def update(self):
-        episodes = Experience()
+        episodes = Episodes()
         episodes_probabilities = []
 
         while episodes.num_steps() < self._min_steps_per_batch:

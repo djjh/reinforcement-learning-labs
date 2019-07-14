@@ -17,6 +17,29 @@ from rl.core import AlgorithmFactory
 from rl.core import EnvironmentFactory
 from rl.core import Runner
 
+def main():
+    errors = []
+    for graph in graphs():
+        algorithm_class_name = fullname(graph.get('algorithm'))
+        environment_name = graph.get('environment_name')
+        print('---- {} - {} ----\n'.format(algorithm_class_name, environment_name))
+        try:
+            graph.get('experiment').run()
+        except (KeyboardInterrupt, SystemExit):
+            print()
+            exit()
+        except:
+            errors.append({'algorithm': algorithm_class_name, 'exception': traceback.format_exc()})
+
+    if len(errors) > 0:
+        print('Failed:')
+
+    for problem in errors:
+        print('START------------------------------------')
+        print(problem['algorithm'])
+        print(problem['exception'])
+        print('END------------------------------------')
+
 def fullname(o):
   # o.__module__ + "." + o.__class__.__qualname__ is an example in
   # this context of H.L. Mencken's "neat, plausible, and wrong."
@@ -112,15 +135,6 @@ class Experiment():
 
 
 def graphs():
-
-    # environment_factory = EnvironmentFactory()
-    #
-    # np.random.seed(random_seed)
-    # random.seed(random_seed)
-
-    # specification, environment = environment_factory.create_environment(environment_name)
-    # environment.seed(random_seed)
-
     return GraphGenerator(specifications=[
         Specification(providers=[
             ValueNode(
@@ -128,7 +142,12 @@ def graphs():
                 value=0),
             ValuesNode(
                 name='environment_name',
-                values=['CartPole-v0', 'CartPole-v1']),
+                values=[
+                    # 'CartPole-v0',
+                    # 'CartPole-v1',
+                    'MountainCar-v0'
+                    # 'Pendulum-v0'  # Not NotImplementedError
+                ]),
             FunctionNode(
                 name='environment',
                 function=gym.make,
@@ -138,12 +157,15 @@ def graphs():
                 function=gym.spec,
                 kwargs={'id': InjectNode(name='environment_name')}),
             FunctionNode(
+                name='tensorflow_input_factory',
+                function=rl.tf.factories.InputFactory),
+            FunctionNode(
                 name='tensorflow_policy_factory',
                 function=rl.tf.factories.PolicyFactory,
                 kwargs={
-                    'input_factory': FunctionNode(function=rl.tf.factories.InputFactory),
+                    'input_factory': InjectNode(name='tensorflow_input_factory'),
                     'distribution_type_factory': FunctionNode(function=rl.tf.factories.ProbabilityDistributionTypeFactory),
-                    'learning_rate': ValuesNode(values=[1e-2, 5e-3, 1e-3])
+                    'learning_rate': ValuesNode(values=[5e-3])
                 }
             ),
             FunctionNode(
@@ -155,6 +177,33 @@ def graphs():
                 }
             ),
             NodesNode(
+                name='tensorflow_advantage_function',
+                nodes=[
+                    FunctionNode(
+                        function=rl.tf.advantages.GeneralizedAdvantageEstimationFunction,
+                        kwargs={
+                            'value_function': FunctionNode(
+                                function=rl.tf.values.LinearValueFunction,
+                                kwargs={
+                                    'environment': InjectNode(name='environment'),
+                                    'input_factory': InjectNode(name='tensorflow_input_factory'),
+                                    'iterations': ValueNode(value=10),
+                                    'learning_rate': ValueNode(value=1e-2),
+                                    'session': ,
+                                }
+                            )
+                        }
+                    ),
+                    # FunctionNode(function=rl.tf.advantages.CumulativeRewardAdvantageFunction),
+                    # FunctionNode(
+                    #     function=rl.tf.advantages.RewardToGoAdvantageFunction,
+                    #     kwargs={
+                    #         'discount': ValuesNode(values=[0.5])
+                    #     }
+                    # ),
+                ]
+            ),
+            NodesNode(
                 name='algorithm',
                 nodes=[
                     FunctionNode(
@@ -164,8 +213,12 @@ def graphs():
                                 'environment': InjectNode(name='environment'),
                                 'random_seed': InjectNode(name='random_seed'),
                                 'policy_factory': InjectNode(name='tensorflow_policy_factory'),
+                                'advantage_function': InjectNode(name='tensorflow_advantage_function'),
                                 'Rollout': ValueNode(value=rl.core.Rollout),
-                                'min_steps_per_batch': ValuesNode(values=[1, 100])
+                                'min_steps_per_batch': ValuesNode(values=[
+                                    1,
+                                    # 100,
+                                ])
                             }
                         ]
                     ),
@@ -212,30 +265,6 @@ def graphs():
 
 
 
-    # return generate_functions(args)
-
-
-
 
 if __name__ == '__main__':
-
-    problems = []
-    for graph in graphs():
-        algorithm_class_name = fullname(graph.get('algorithm'))
-        environment_name = graph.get('environment_name')
-        print('---- {} - {} ----\n'.format(algorithm_class_name, environment_name))
-        try:
-            graph.get('experiment').run()
-        except (KeyboardInterrupt, SystemExit):
-            print()
-            exit()
-        except:
-            problems.append({'algorithm': algorithm_class_name, 'exception': traceback.format_exc()})
-
-    if len(problems) > 0:
-        print('Failed:')
-    for problem in problems:
-        print('START------------------------------------')
-        print(problem['algorithm'])
-        print(problem['exception'])
-        print('END------------------------------------')
+    main()

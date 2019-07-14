@@ -50,7 +50,9 @@ brew install pyenv
     to be able to use the framework build of python you just installed.
     ```sh
     cd /path/to/repo-directory
-    python -m venv .
+    mkdir virtual-environment
+    cd virtual-environment
+    python -m venv --prompt reinforcement-learning-labs ..
     ```
 3.  Enable the virtual environment.
     ```sh
@@ -58,7 +60,7 @@ brew install pyenv
     ```
 4.  Install dependencies using pip.
     ```sh
-    pip install -e .
+    pip install -e ..
     ```
 
 ## Usage
@@ -75,7 +77,7 @@ pyenv local 3.6.3
 ```
 ### Enable Virtual Environment
 ```sh
-source bin/activate
+source virtual-environment/bin/activate
 ```
 ### Run Algorithms
 Each practice algorithm implementation consists of a single file.

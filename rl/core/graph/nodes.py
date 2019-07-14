@@ -42,7 +42,7 @@ class FunctionNode(Node):
 
     def expand(self):
         if self._kwargs == None:
-            result = [FunctionNode(function=self._function, kwargs=self._kwargs, name=self._name)]
+            return [FunctionNode(function=self._function, kwargs=self._kwargs, name=self._name)]
         elif isinstance(self._kwargs, dict):
             kwargs_list = self._expand_dict(self._kwargs)
             return [FunctionNode(function=self._function, kwargs=kwargs, name=self._name) for kwargs in kwargs_list]

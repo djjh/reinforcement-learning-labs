@@ -2,8 +2,10 @@ from .algorithm_factory import AlgorithmFactory
 from .function_generator import generate_functions
 from .environment_factory import EnvironmentFactory
 from .episode import Episode
-from .experience import Experience
+from .experience import Episodes
 from .recording_policy import RecordingPolicy
 from .rollout import Rollout
 from .runner import Runner
 from .graph import *
+
+from .utils import *
