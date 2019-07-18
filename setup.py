@@ -10,11 +10,13 @@ __version__ = '0.0.0'
 
 setup(
     name='reinforcement-learning-labs',
-    py_modules=['reinforcement-learning-labs'],
+    package_dir={'': 'src'},
+    # py_modules=['reinforcement-learning-labs'],
+    packages = ['experiments', 'rl'],
     version=__version__,#'0.1',
     install_requires=[
         'coloredlogs',
-        'cloudpickle==0.5.2',
+        'cloudpickle',
         'gym[atari,box2d,classic_control]>=0.10.8',
         'ipython',
         'joblib',
@@ -26,11 +28,11 @@ setup(
         'psutil',
         'scipy',
         'seaborn==0.8.1',
-        'tensorflow>=1.13.0',
+        'tensorflow==1.13.2',
         'tensorflow-probability>=0.6.0',
         'tqdm',
         'nevergrad'
     ],
-    description="Excercises in reinforcement learning.",
+    description="Exercises in reinforcement learning.",
     author="Dylan Holmes",
 )

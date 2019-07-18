@@ -1,6 +1,6 @@
+from . import AdvantageFunction
 
-
-class CumulativeRewardAdvantageFunction:
+class CumulativeRewardAdvantageFunction(AdvantageFunction):
 
     def __init__(self):
         pass

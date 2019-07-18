@@ -1,7 +1,3 @@
-import sys, os
-from pathlib import Path
-sys.path.append(str(Path(os.path.join(os.path.dirname(__file__), '..')).resolve()))
-
 import traceback
 import rl
 
@@ -16,6 +12,7 @@ from rl.core import Rollout
 from rl.core import AlgorithmFactory
 from rl.core import EnvironmentFactory
 from rl.core import Runner
+
 
 def main():
     errors = []
@@ -41,26 +38,47 @@ def main():
         print('END------------------------------------')
 
 def fullname(o):
-  # o.__module__ + "." + o.__class__.__qualname__ is an example in
-  # this context of H.L. Mencken's "neat, plausible, and wrong."
-  # Python makes no guarantees as to whether the __module__ special
-  # attribute is defined, so we take a more circumspect approach.
-  # Alas, the module name is explicitly excluded from __qualname__
-  # in Python 3.
+    # o.__module__ + "." + o.__class__.__qualname__ is an example in
+    # this context of H.L. Mencken's "neat, plausible, and wrong."
+    # Python makes no guarantees as to whether the __module__ special
+    # attribute is defined, so we take a more circumspect approach.
+    # Alas, the module name is explicitly excluded from __qualname__
+    # in Python 3.
 
-  module = o.__class__.__module__
-  if module is None or module == str.__class__.__module__:
-    return o.__class__.__name__  # Avoid reporting __builtin__
-  else:
-    return module + '.' + o.__class__.__name__
+    module = o.__class__.__module__
+    if module is None or module == str.__class__.__module__:
+        return o.__class__.__name__  # Avoid reporting __builtin__
+    else:
+        return module + '.' + o.__class__.__name__
 
+
+class InMemoryLogger():
+
+    def __init__(self):
+        self._info_logs = []
+        self._metrics = {}
+
+    def info(self, message):
+        self._info_logs.append(message)
+
+    def metric(self, metric, value):
+        if not metric in self._metrics:
+            self._metrics[metric] = []
+        self._metrics[metric].append(value)
+
+    def plot(self, mx, my):
+        pass  # plot(self._metrics[mx], self._metrics[my])
+
+# class FileAppendingLogger():
+#     pass
 
 class Experiment():
 
-    def __init__(self, algorithm, specification, environment, random_seed, max_epochs, deterministic):
+    def __init__(self, algorithm, specification, environment, log, random_seed, max_epochs, deterministic):
         self.algorithm = algorithm
         self.specification = specification
         self.environment = environment
+        self.log = log
         self.random_seed = random_seed
         self.max_epochs = max_epochs
         self.deterministic = deterministic
@@ -86,6 +104,8 @@ class Experiment():
 
             for epoch in range(1, max_epochs+1):
 
+                self.log.metric("epoch", epoch)
+
                 algorithm.update()
 
                 episode_stepss = []
@@ -105,6 +125,10 @@ class Experiment():
                     if win:
                         win_count += 1
 
+                self.log.metric("win_count", win_count)
+                self.log.metric("win", win)
+                self.log.metric("ep2", episode_reward)
+
                 print('                                                                                 ',
                     end="\r")
                 print('epoch: {}, wins: {}, length: {}, reward: {}'.format(epoch, win_count, np.mean(episode_steps), np.mean(episode_rewards)),
@@ -112,6 +136,8 @@ class Experiment():
 
                 if win:
                     break
+
+            self.log.plot('epoch', 'ep2')
 
             policy = algorithm   # or should we have def policy(self) -> Policy ?
             episode = Rollout(environment,  policy, random_seed=random_seed, deterministic=deterministic, render=True)
@@ -139,7 +165,8 @@ def graphs():
         Specification(providers=[
             ValueNode(
                 name='random_seed',
-                value=0),
+                value=0
+            ),
             ValuesNode(
                 name='environment_name',
                 values=[
@@ -147,18 +174,31 @@ def graphs():
                     # 'CartPole-v1',
                     'MountainCar-v0'
                     # 'Pendulum-v0'  # Not NotImplementedError
-                ]),
+                ]
+            ),
+            FunctionNode(
+                name='in-memory-logger',
+                function=InMemoryLogger
+            ),
             FunctionNode(
                 name='environment',
                 function=gym.make,
-                kwargs={'id': InjectNode(name='environment_name')}),
+                kwargs={'id': InjectNode(name='environment_name')}
+            ),
+            # Here is one possible way of unwrapping properties of dependencies:
+            # FunctionNode(
+            #     name='observation_space',
+            #     function=lambda e: e.observation_space,
+            #     kwargs={'e': InjectNode(name='environment')}),
             FunctionNode(
                 name='specification',
                 function=gym.spec,
-                kwargs={'id': InjectNode(name='environment_name')}),
+                kwargs={'id': InjectNode(name='environment_name')}
+            ),
             FunctionNode(
                 name='tensorflow_input_factory',
-                function=rl.tf.factories.InputFactory),
+                function=rl.tf.factories.InputFactory
+            ),
             FunctionNode(
                 name='tensorflow_policy_factory',
                 function=rl.tf.factories.PolicyFactory,
@@ -188,8 +228,7 @@ def graphs():
                                     'environment': InjectNode(name='environment'),
                                     'input_factory': InjectNode(name='tensorflow_input_factory'),
                                     'iterations': ValueNode(value=10),
-                                    'learning_rate': ValueNode(value=1e-2),
-                                    'session': ,
+                                    'learning_rate': ValueNode(value=1e-2)
                                 }
                             )
                         }
@@ -206,35 +245,39 @@ def graphs():
             NodesNode(
                 name='algorithm',
                 nodes=[
-                    FunctionNode(
-                        function=rl.tf.algorithms.VanillaPolicyGradient,
-                        kwargs=[
-                            {
-                                'environment': InjectNode(name='environment'),
-                                'random_seed': InjectNode(name='random_seed'),
-                                'policy_factory': InjectNode(name='tensorflow_policy_factory'),
-                                'advantage_function': InjectNode(name='tensorflow_advantage_function'),
-                                'Rollout': ValueNode(value=rl.core.Rollout),
-                                'min_steps_per_batch': ValuesNode(values=[
-                                    1,
-                                    # 100,
-                                ])
-                            }
-                        ]
-                    ),
+                    # In Progres ....
                     # FunctionNode(
-                    #     function=rl.np.algorithms.VanillaPolicyGradient,
+                    #     name='tensorflow_vanilla_policy_gradient',
+                    #     function=rl.tf.algorithms.VanillaPolicyGradient,
                     #     kwargs=[
                     #         {
                     #             'environment': InjectNode(name='environment'),
                     #             'random_seed': InjectNode(name='random_seed'),
-                    #             'policy_factory': InjectNode(name='numpy_policy_factory'),
-                    #             'rollout_factory': ValueNode(value=rl.core.Rollout),
-                    #             'min_steps_per_batch': ValuesNode(values=[1, 100])
+                    #             'policy_factory': InjectNode(name='tensorflow_policy_factory'),
+                    #             'advantage_function': InjectNode(name='tensorflow_advantage_function'),
+                    #             'Rollout': ValueNode(value=rl.core.Rollout),
+                    #             'min_steps_per_batch': ValuesNode(values=[
+                    #                 1,
+                    #                 # 100,
+                    #             ])
                     #         }
                     #     ]
                     # ),
+                    FunctionNode(
+                        name='numpy_vanilla_policy_gradient',
+                        function=rl.np.algorithms.VanillaPolicyGradient,
+                        kwargs=[
+                            {
+                                'environment': InjectNode(name='environment'),
+                                'random_seed': InjectNode(name='random_seed'),
+                                'policy_factory': InjectNode(name='numpy_policy_factory'),
+                                'rollout_factory': ValueNode(value=rl.core.Rollout),
+                                'min_steps_per_batch': ValuesNode(values=[1, 100])
+                            }
+                        ]
+                    ),
                     # FunctionNode(
+                    #     name='numpy_random_search',
                     #     function=rl.np.algorithms.RandomSearch,
                     #     kwargs=[
                     #         {
@@ -256,6 +299,7 @@ def graphs():
                     'specification': InjectNode(name='specification'),
                     'environment': InjectNode(name='environment'),
                     'algorithm': InjectNode(name='algorithm'),
+                    'log': InjectNode(name='in-memory-logger'),
                     'random_seed': InjectNode(name='random_seed'),
                     'max_epochs': ValueNode(value=200),
                     'deterministic': ValueNode(value='True')

@@ -1,8 +1,9 @@
 import numpy as np
 
+from . import AdvantageFunction
 from rl.core import discount_cumsum
 
-class GeneralizedAdvantageEstimationFunction:
+class GeneralizedAdvantageEstimationFunction(AdvantageFunction):
 
     # TODO: (observation) or (observation, action) as input to the value function...
     def __init__(self, value_function):
@@ -13,7 +14,8 @@ class GeneralizedAdvantageEstimationFunction:
         return self._get_batch_advantages(experience)
 
     def update(self, experience):
-        self.value_function.update(experience)
+        with self._value_function:
+            self._value_function.update(experience)
 
     def _get_batch_advantages(self, experience):
         return [advantage
@@ -21,12 +23,13 @@ class GeneralizedAdvantageEstimationFunction:
             for advantage in self._get_advantages(episode)]
 
     def _get_advantages(self, episode):
-        rewards = episode.get_rewards()
-        print(type(episode))
-        values = self._value_function.get_values(episode)
-        deltas = rewards[:-1] + 0.99 * values[1:] - values[:-1]
-        print(deltas)
-        return deltas
+        with self._value_function:
+            rewards = episode.get_rewards()
+            print(type(episode))
+            values = self._value_function.get_values(episode)
+            deltas = rewards[:-1] + 0.99 * values[1:] - values[:-1]
+            print(deltas)
+            return deltas
 
     def _get_batch_returns(self, experience):
         return [weight

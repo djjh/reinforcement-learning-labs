@@ -52,7 +52,7 @@ brew install pyenv
     cd /path/to/repo-directory
     mkdir virtual-environment
     cd virtual-environment
-    python -m venv --prompt reinforcement-learning-labs ..
+    python -m venv --prompt reinforcement-learning-labs .
     ```
 3.  Enable the virtual environment.
     ```sh
@@ -79,17 +79,17 @@ pyenv local 3.6.3
 ```sh
 source virtual-environment/bin/activate
 ```
-### Run Algorithms
-Each practice algorithm implementation consists of a single file.
-
-To run an algorithm:
+### Run Experiments
+To run an experiment:
 
 ```sh
-python practice/<XX_short_algorithm_description>.py
+python -m experiments.<experiment_name>  # e.g. python -m experiments.03_basic
 ```
 
 
 ## Development
 
 ### Notes
-python import traps: <http://python-notes.curiousefficiency.org/en/latest/python_concepts/import_traps.html>
+*   python setup scripts: <https://docs.python.org/3.6/distutils/setupscript.html>
+*   pytest good practices: <https://docs.pytest.org/en/latest/goodpractices.html>
+*   python import traps: <http://python-notes.curiousefficiency.org/en/latest/python_concepts/import_traps.html>

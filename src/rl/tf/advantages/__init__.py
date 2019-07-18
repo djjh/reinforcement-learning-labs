@@ -1,3 +1,4 @@
+from .advantage_function import AdvantageFunction
 from .cumulative_reward_advantage_function import CumulativeRewardAdvantageFunction
 from .generalized_advantage_estimation_function import GeneralizedAdvantageEstimationFunction
 from .reward_to_go_advantage_function import RewardToGoAdvantageFunction

@@ -1,5 +1,3 @@
 from .input_factory import InputFactory
 from .policy_factory import PolicyFactory
 from .probability_distribution_type_factory import ProbabilityDistributionTypeFactory
-
-from .algorithm_factory import AlgorithmFactory
