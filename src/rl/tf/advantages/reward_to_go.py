@@ -3,7 +3,7 @@ import numpy as np
 from . import AdvantageFunction
 from rl.core import discount_cumsum
 
-class RewardToGoAdvantageFunction(AdvantageFunction):
+class RewardToGo(AdvantageFunction):
 
     def __init__(self, discount):
         self._discount = discount

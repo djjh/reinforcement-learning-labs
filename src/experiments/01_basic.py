@@ -229,7 +229,7 @@ def graphs():
                     ),
                     # FunctionNode(function=rl.tf.advantages.Cumulative),
                     # FunctionNode(
-                    #     function=rl.tf.advantages.RewardToGoAdvantageFunction,
+                    #     function=rl.tf.advantages.RewardToGo,
                     #     kwargs={
                     #         'discount': ValuesNode(values=[0.5])
                     #     }

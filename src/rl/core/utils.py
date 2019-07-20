@@ -1,8 +1,5 @@
 import numpy as np
+import itertools
 
 def discount_cumsum(rewards, discount):
-    out = np.zeros_like(rewards)
-    n = len(rewards)
-    for i in reversed(range(n)):
-        out[i] = rewards[i] + (discount*out[i+1] if i+1 < n else 0)
-    return out
+    return reversed(list(itertools.accumulate(reversed(rewards), lambda a, b: discount * a + b)))

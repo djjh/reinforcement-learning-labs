@@ -44,7 +44,7 @@ class VanillaPolicyGradient:
             #         learning_rate=self._policy._learning_rate, ## HACK!
             #         session=self._session))
             # self._advantage_function = CumulativeRewardAdvantageFunction()
-            # self._advantage_function = RewardToGoAdvantageFunction()
+            # self._advantage_function = RewardToGo()
 
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
