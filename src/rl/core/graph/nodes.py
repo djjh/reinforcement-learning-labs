@@ -68,6 +68,9 @@ class ValueNode(Node):
     def get_name(self):
         return self._name
 
+    def get_value(self):
+        return self._value
+
     def expand(self):
         return [self]
 

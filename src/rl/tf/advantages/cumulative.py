@@ -1,20 +1,20 @@
 from . import AdvantageFunction
 
-class CumulativeRewardAdvantageFunction(AdvantageFunction):
+class Cumulative(AdvantageFunction):
 
     def __init__(self):
         pass
 
-    def get_advantages(self, experience):
-        return self._get_batch_returns(experience)
+    def get_advantages(self, episodes):
+        return self._get_batch_returns(episodes)
 
 
-    def update(self, experience):
+    def update(self, episodes):
         pass
 
-    def _get_batch_returns(self, experience):
+    def _get_batch_returns(self, episodes):
         return [episode_return
-            for episode in experience
+            for episode in episodes
             for episode_return in self._get_returns(episode)]
 
     def _get_returns(self, episode):

@@ -11,33 +11,12 @@ class Graph():
         self._graph = graph
 
     def get(self, key):
-        """
-        Parameters
-        ----------
-        key: Class or Callable or str -- TODO
-
-        Returns
-        -------
-        the instance for the given key
-
-        Throws
-        ------
-        * if the key is ambiguous (e.g. the are two named instances for a Class or Callable)
-        """
         return self._graph[key]
 
 class Specification():
 
-    def __init__(self, providers):
-        """
-        A special kind of graph to facilitate combinatorial dependency injection.
-
-        Parameters
-        ----------
-        providers: Iterable[Provider] -- TODO
-
-        """
-        self._providers = providers
+    def __init__(self, nodes):
+        self._providers = nodes
 
     def get_providers(self):
         return self._providers
@@ -63,7 +42,8 @@ class Specification():
 
         self.nodes = nodes
         self.nodes_by_name = dict([(n.get_name(),n) for n in self.nodes])
-        del self.nodes_by_name[None]
+        if None in self.nodes_by_name:
+            del self.nodes_by_name[None]
 
     def _build_edges(self):
         """ NOTE: only works if flattened! """

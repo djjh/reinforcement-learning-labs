@@ -25,6 +25,7 @@ setup(
         'numpy==1.16.1',  # 1.16.1 is required to load the imbd dataset (for now)
         'pandas',
         'pytest',
+        'pytest-cov',
         'psutil',
         'scipy',
         'seaborn==0.8.1',

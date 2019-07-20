@@ -1,6 +1,3 @@
-import gym
-import numpy as np
-import random
 
 class Episode:
     def __init__(self):

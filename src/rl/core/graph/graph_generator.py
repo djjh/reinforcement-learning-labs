@@ -20,13 +20,18 @@ class GraphGenerator():
         self._specifications = specifications
         self._graph_iterator = None
 
-    def __iter__(self):
         def iterator():
             for s in self._specifications:
                 for g in self._build_graph_iterator(s):
                     yield g
-            raise StopIteration()
-        return iterator()
+
+        self._iterator = iterator()
+
+    def __iter__(self):
+        return self._iterator
+
+    def __next__(self):
+        return next(self._iterator)
 
     def _build_graph_iterator(self, specification):
 
@@ -56,4 +61,4 @@ class GraphGenerator():
         Returns list of expanded specifications.
         """
         expanded_nodes = [node.expand() for node in specification.get_providers()]
-        return [Specification(providers=new_providers) for new_providers in product(*expanded_nodes)]
+        return [Specification(nodes=nodes) for nodes in product(*expanded_nodes)]
