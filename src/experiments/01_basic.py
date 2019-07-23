@@ -214,7 +214,7 @@ def graphs():
                 name='tensorflow_advantage_function',
                 nodes=[
                     FunctionNode(
-                        function=rl.tf.advantages.GeneralizedAdvantageEstimationFunction,
+                        function=rl.tf.advantages.Gae,
                         kwargs={
                             'value_function': FunctionNode(
                                 function=rl.tf.values.LinearValueFunction,
@@ -224,7 +224,9 @@ def graphs():
                                     'iterations': ValueNode(value=10),
                                     'learning_rate': ValueNode(value=1e-2)
                                 }
-                            )
+                            ),
+                            'gamma': ValueNode(value=0.5),
+                            'lambduh': ValuesNode(value=0.99)
                         }
                     ),
                     # FunctionNode(function=rl.tf.advantages.Cumulative),

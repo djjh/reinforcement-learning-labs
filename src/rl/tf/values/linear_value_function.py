@@ -1,10 +1,11 @@
 import numpy as np
 import tensorflow as tf
 
+from . import ValueFunction
 from rl.core import Episodes
 
 
-class LinearValueFunction:
+class LinearValueFunction(ValueFunction):
 
     # TODO: (observation) or (observation, action) as input to the value function...
     def __init__(self, environment, input_factory, iterations, learning_rate):
