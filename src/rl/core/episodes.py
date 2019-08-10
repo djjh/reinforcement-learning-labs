@@ -23,9 +23,9 @@ class Episodes:
     def get_batch_observations(self):
         return [observation
             for episode in self._episodes
-            for observation in episode.observations]
+            for observation in episode.get_observations()]
 
     def get_batch_actions(self):
         return [action
             for episode in self._episodes
-            for action in episode.actions]
+            for action in episode.get_actions()]

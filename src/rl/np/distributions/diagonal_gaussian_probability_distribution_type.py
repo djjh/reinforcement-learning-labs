@@ -18,4 +18,4 @@ class DiagonalGaussianProbabilityDistributionType:
         return ()
 
     def sample_dtype(self):
-        return np.int32  # how to do this across frameworks? e.g. tf.int32...
+        return np.int32

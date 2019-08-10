@@ -1,14 +1,13 @@
 import pytest
 import rl
 import mock
-from mock import Mock
+import numpy as np
 
+from mock import Mock
 from rl.tf.advantages import Gae
 from rl.tf.values import ValueFunction
 from tst.utilities import generate_episodes
 
-
-import numpy as np
 
 class GaeTest:
 
@@ -118,9 +117,3 @@ class GaeTest:
         advantage_function.update(episodes)
 
         # no exception thrown
-
-
-class ValueFunctionImpl(ValueFunction):
-
-    def __init__(self):
-        pass

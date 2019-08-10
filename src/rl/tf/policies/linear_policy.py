@@ -1,7 +1,9 @@
 import tensorflow as tf
 
+from rl.core.model import Policy
 
-class LinearPolicy:
+
+class LinearPolicy(Policy):
 
     def __init__(self, observation_space, action_space, input_factory, distribution_type_factory, learning_rate, session):
         self._observation_space = observation_space

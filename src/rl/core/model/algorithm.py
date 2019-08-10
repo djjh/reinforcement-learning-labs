@@ -1,8 +1,7 @@
 
 
-class AdvantageFunction:
-
-    def __init__(self):
+class Algorithm:
+    def __init__():
         raise NotImplementedError()
 
     def __enter__(self):
@@ -11,8 +10,10 @@ class AdvantageFunction:
     def __exit__(self, exc_type, exc_val, exc_tb):
         raise NotImplementedError()
 
-    def get_advantages(self, episodes):
+    def action(self, observation, deterministic):
+        """ Returns an action """
         raise NotImplementedError()
 
-    def update(self, episodes):
+    def update(self):
+        """ Train for an epoch """
         raise NotImplementedError()

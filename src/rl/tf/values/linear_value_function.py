@@ -3,6 +3,7 @@ import tensorflow as tf
 
 from . import ValueFunction
 from rl.core import Episodes
+from rl.core import discount_cumsum
 
 
 class LinearValueFunction(ValueFunction):
@@ -26,7 +27,7 @@ class LinearValueFunction(ValueFunction):
             self._session = tf.Session(graph=self._graph)
 
             self._input = input_factory.create(self._observation_space, None)
-            self._observations =self._input.get_input()
+            self._observations = self._input.get_input()
             self._model = self._create_model(self._input)
             self._values = self._model
 
@@ -34,10 +35,12 @@ class LinearValueFunction(ValueFunction):
             self._loss = tf.reduce_mean(tf.square(self._values - self._returns))
             self._train = tf.train.AdamOptimizer(learning_rate=self._learning_rate).minimize(self._loss)
 
+
+            self._session.run(tf.global_variables_initializer())
+            self._session.run(tf.local_variables_initializer())
+
     def __enter__(self):
         self._session.__enter__()
-        self._session.run(tf.global_variables_initializer())
-        self._session.run(tf.local_variables_initializer())
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -63,21 +66,21 @@ class LinearValueFunction(ValueFunction):
     #     return values[0]
 
     def get_values(self, episodes):
-        observations = np.array([o for e in input for o in e.get_observations()])
-        print(observations.shape)
+        if not isinstance(episodes, Episodes):
+            episodes = [episodes]
 
-        if actions:
-            actions = np.array(actions)
-            print(actions.shape)
+        observations = np.array([observation
+            for episode in episodes
+            for observation in episode.get_observations()])
 
         values = self._session.run(
             fetches=self._values,
             feed_dict={self._observations: observations})
-        print(values.shape)
+
         return values.flatten()
 
 
-    def update(self, observations, returns, actions=None):
+    def update(self, observations, returns):
         for iteration in range(self._iterations):
             self._session.run(
                 fetches=self._train,

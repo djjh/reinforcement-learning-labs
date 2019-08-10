@@ -28,7 +28,12 @@ class Specification():
         while len(stack) > 0:
             node = stack.pop()
             nodes.add(node)
-            if isinstance(node, FunctionNode):
+            if isinstance(node, ValueNode):
+                pass
+            elif isinstance(node, ValuesNode):
+                print(node)
+                raise Error("This shouldn't happen.")
+            elif isinstance(node, FunctionNode):
                 kwargs = node.get_kwargs()
                 if isinstance(kwargs, dict):
                     for k, v in kwargs.items():
@@ -39,6 +44,8 @@ class Specification():
                         for k, v in d.items():
                             if not isinstance(v, InjectNode):
                                 stack.append(v)
+            else:
+                raise NotImplementedError("{} not implemented for Specification._build_nodes() ".format(type(node)))
 
         self.nodes = nodes
         self.nodes_by_name = dict([(n.get_name(),n) for n in self.nodes])
@@ -125,13 +132,17 @@ class Specification():
         for node in self._topologically_sorted_nodes:
             if isinstance(node, ValueNode):
                 instances[node] = node._value
+            elif isinstance(node, ValuesNode):
+                raise Error("This shouldn't happen.")
             elif isinstance(node, FunctionNode):
                 if node.get_kwargs() == None:
                      instances[node] = node.get_function()()
                 elif isinstance(node.get_kwargs(), dict):
                     kwargs = {}
                     for k, v in node.get_kwargs().items():
+                        print(k, v)
                         rv = self.resolved[node][v]
+                        print(rv)
                         kwargs[k] = instances[rv]
                     # print(inspect.getargspec(node._function))
                     # for a in missingArgs(node._function, kwargs):
@@ -141,6 +152,8 @@ class Specification():
                     instances[node] = node.get_function()(**kwargs)
                 else:
                     raise NotImplementedError()
+            else:
+                raise NotImplementedError("{} not implemented for Specification._complete() ".format(type(node)))
 
         # Generate a map from top level object (name, class) or (name, function) pairs to instance.
         top = {}

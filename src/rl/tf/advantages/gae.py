@@ -10,12 +10,20 @@ class Gae(AdvantageFunction):
         self._gamma = gamma
         self._lambda = lambduh
 
+    def __enter__(self):
+        self._value_function.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._value_function.__exit__(exc_type, exc_val, exc_tb)
+
     def get_advantages(self, episodes):
         return self._get_batch_advantages(episodes)
 
     def update(self, episodes):
-        with self._value_function:
-            self._value_function.update(episodes)
+        observations = episodes.get_batch_observations()
+        returns = self._get_batch_returns(episodes)
+        self._value_function.update(observations, returns)
 
     def _get_batch_advantages(self, episodes):
         return [advantage
@@ -23,12 +31,11 @@ class Gae(AdvantageFunction):
             for advantage in self._get_advantages(episode)]
 
     def _get_advantages(self, episode):
-        with self._value_function:
-            rewards = episode.get_rewards()
-            values = self._value_function.get_values(episode)
-            deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
-            advantages = discount_cumsum(rewards, self._gamma * self._lambda)
-            return advantages
+        rewards = episode.get_rewards()
+        values = self._value_function.get_values(episode)
+        deltas = rewards[:-1] + self._gamma * values[1:] - values[:-1]
+        advantages = discount_cumsum(rewards, self._gamma * self._lambda)
+        return advantages
 
     def _get_batch_returns(self, episodes):
         return [weight
@@ -37,5 +44,5 @@ class Gae(AdvantageFunction):
 
     def _get_returns(self, episode):
         rewards = episode.get_rewards()
-        returns = discount_cumsum(rewards)
+        returns = discount_cumsum(rewards, self._lambda)
         return returns

@@ -164,9 +164,9 @@ def graphs():
             ValuesNode(
                 name='environment_name',
                 values=[
-                    # 'CartPole-v0',
+                    'CartPole-v0',
                     # 'CartPole-v1',
-                    'MountainCar-v0'
+                    # 'MountainCar-v0'
                     # 'Pendulum-v0'  # Not NotImplementedError
                 ]
             ),
@@ -222,11 +222,11 @@ def graphs():
                                     'environment': InjectNode(name='environment'),
                                     'input_factory': InjectNode(name='tensorflow_input_factory'),
                                     'iterations': ValueNode(value=10),
-                                    'learning_rate': ValueNode(value=1e-2)
+                                    'learning_rate': ValueNode(value=1e-3), ## TODO: This is broken: ValuesNode(name='dummy', values=[1e-3])
                                 }
                             ),
                             'gamma': ValueNode(value=0.5),
-                            'lambduh': ValuesNode(value=0.99)
+                            'lambduh': ValueNode(value=0.99)
                         }
                     ),
                     # FunctionNode(function=rl.tf.advantages.Cumulative),
@@ -242,36 +242,33 @@ def graphs():
                 name='algorithm',
                 nodes=[
                     # In Progres ....
-                    # FunctionNode(
-                    #     name='tensorflow_vanilla_policy_gradient',
-                    #     function=rl.tf.algorithms.VanillaPolicyGradient,
-                    #     kwargs=[
-                    #         {
-                    #             'environment': InjectNode(name='environment'),
-                    #             'random_seed': InjectNode(name='random_seed'),
-                    #             'policy_factory': InjectNode(name='tensorflow_policy_factory'),
-                    #             'advantage_function': InjectNode(name='tensorflow_advantage_function'),
-                    #             'Rollout': ValueNode(value=rl.core.Rollout),
-                    #             'min_steps_per_batch': ValuesNode(values=[
-                    #                 1,
-                    #                 # 100,
-                    #             ])
-                    #         }
-                    #     ]
-                    # ),
                     FunctionNode(
-                        name='numpy_vanilla_policy_gradient',
-                        function=rl.np.algorithms.VanillaPolicyGradient,
+                        name='tensorflow_vanilla_policy_gradient',
+                        function=rl.tf.algorithms.VanillaPolicyGradient,
                         kwargs=[
                             {
                                 'environment': InjectNode(name='environment'),
                                 'random_seed': InjectNode(name='random_seed'),
-                                'policy_factory': InjectNode(name='numpy_policy_factory'),
-                                'rollout_factory': ValueNode(value=rl.core.Rollout),
-                                'min_steps_per_batch': ValuesNode(values=[1, 100])
+                                'policy_factory': InjectNode(name='tensorflow_policy_factory'),
+                                'advantage_function': InjectNode(name='tensorflow_advantage_function'),
+                                'Rollout': ValueNode(value=rl.core.Rollout),
+                                'min_steps_per_batch': ValueNode(value=100)
                             }
                         ]
                     ),
+                    # FunctionNode(
+                    #     name='numpy_vanilla_policy_gradient',
+                    #     function=rl.np.algorithms.VanillaPolicyGradient,
+                    #     kwargs=[
+                    #         {
+                    #             'environment': InjectNode(name='environment'),
+                    #             'random_seed': InjectNode(name='random_seed'),
+                    #             'policy_factory': InjectNode(name='numpy_policy_factory'),
+                    #             'rollout_factory': ValueNode(value=rl.core.Rollout),
+                    #             'min_steps_per_batch': ValuesNode(values=[1, 100])
+                    #         }
+                    #     ]
+                    # ),
                     # FunctionNode(
                     #     name='numpy_random_search',
                     #     function=rl.np.algorithms.RandomSearch,

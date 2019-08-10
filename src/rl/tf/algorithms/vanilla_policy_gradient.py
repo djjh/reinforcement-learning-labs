@@ -2,15 +2,10 @@ import numpy as np
 import tensorflow as tf
 
 from rl.core import Episodes
+from rl.core.model import Algorithm
 
 
-from rl.tf.advantages import *
-
-from rl.tf.values import *
-
-
-
-class VanillaPolicyGradient:
+class VanillaPolicyGradient(Algorithm):
 
     def __init__(self, environment, random_seed, policy_factory, advantage_function,
             Rollout, min_steps_per_batch):
@@ -33,60 +28,51 @@ class VanillaPolicyGradient:
                 observation_space=environment.observation_space,
                 action_space=environment.action_space,
                 session=self._session)
-            # self._advantage_function.initialize()
-            # = self._advantage_function_factory.create_advantage_function()
-            # GeneralizedAdvantageFunction(
-            #     value_function=LinearValueFunction(
-            #         observation_space=environment.observation_space,
-            #         action_space=environment.action_space,
-            #         input_factory=self._policy._input_factory, ## HACK!
-            #         iterations=20,                             ## HACK!
-            #         learning_rate=self._policy._learning_rate, ## HACK!
-            #         session=self._session))
-            # self._advantage_function = CumulativeRewardAdvantageFunction()
-            # self._advantage_function = RewardToGo()
+
+            self._session.run(tf.global_variables_initializer())
+            self._session.run(tf.local_variables_initializer())
 
         self._policy_return = -np.inf
         self._policy_steps = -np.inf
 
     def __enter__(self):
         self._session.__enter__()
-        self._session.run(tf.global_variables_initializer())
-        self._session.run(tf.local_variables_initializer())
+        self._advantage_function.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._advantage_function.__exit__(exc_type, exc_val, exc_tb)
         self._session.__exit__(exc_type, exc_val, exc_tb)
 
     def action(self, observation, deterministic):
         return self._policy.action(observation, deterministic)
 
     def update(self):
-        experience = self._generate_experience()
+        episodes = self._generate_episodes()
         self._policy.update(
-            observations=self._get_batch_observations(experience),
-            actions=self._get_batch_actions(experience),
-            advantages=self._advantage_function.get_advantages(experience))
-        self._advantage_function.update(experience=experience)
+            observations=self._get_batch_observations(episodes),
+            actions=self._get_batch_actions(episodes),
+            advantages=self._advantage_function.get_advantages(episodes))
+        self._advantage_function.update(episodes=episodes)
 
-    def _generate_experience(self):
-        experience = Episodes()
-        while experience.num_steps() < self._min_steps_per_batch:
+    def _generate_episodes(self):
+        episodes = Episodes()
+        while episodes.num_steps() < self._min_steps_per_batch:
             episode = self._Rollout(
                 environment=self._environment,
                 policy=self._policy,
                 random_seed=self._random_seed,
                 deterministic=False,
                 render=False)
-            experience.append(episode)
-        return experience
+            episodes.append(episode)
+        return episodes
 
-    def _get_batch_observations(self, experience):
+    def _get_batch_observations(self, episodes):
         return [observation
-            for episode in experience
+            for episode in episodes
             for observation in episode.get_observations() ]
 
-    def _get_batch_actions(self, experience):
+    def _get_batch_actions(self, episodes):
         return [action
-            for episode in experience
+            for episode in episodes
             for action in episode.get_actions() ]

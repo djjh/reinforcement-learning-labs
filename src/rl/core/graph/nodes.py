@@ -84,7 +84,7 @@ class ValuesNode(Node):
         return iter(self.expand())
 
     def __repr__(self):
-        return 'ValueNodes[v={},n={}]'.format(self._value, self._name)
+        return 'ValuesNode[v={},n={}]'.format(self._values, self._name)
 
     def get_name(self):
         return self._name
