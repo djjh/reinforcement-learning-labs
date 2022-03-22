@@ -61,6 +61,9 @@ brew install pyenv
     pip install -e .
     ```
 
+    Note if fails with `error: Cannot compile MPI programs. Check your configuration!!!`
+    then `brew install openmpi`
+
 ## Usage
 
 ### Go to working directory
